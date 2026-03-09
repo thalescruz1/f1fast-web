@@ -44,9 +44,9 @@ import { Etapa } from '../../core/models';
                  Isso torna o card clicável APENAS para corridas passadas. -->
             <a [routerLink]="e.encerrada ? ['/palpites', e.id] : null"
                class="cal-item"
-               [class.next]="isProxima(e)"    <!-- adiciona classe "next" se for a próxima -->
-               [class.sprint]="e.sprint"       <!-- adiciona classe "sprint" se for Sprint -->
-               [class.done]="e.encerrada">     <!-- adiciona classe "done" se encerrada -->
+               [class.next]="isProxima(e)"   
+               [class.sprint]="e.sprint"       
+               [class.done]="e.encerrada">   <!-- adiciona classe "next" se for a próxima --> <!-- adiciona classe "sprint" se for Sprint --> <!-- adiciona classe "done" se encerrada -->
 
               <div class="cal-top">
                 <span class="cal-num">Etapa {{ e.numero }}</span>
