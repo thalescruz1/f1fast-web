@@ -36,6 +36,7 @@ import { PalpitePublico } from '../../core/models';
         <div class="card empty">{{ erro() }}</div>
       } @else {
         <div class="card">
+          <div class="table-wrapper">
           <table class="palpites-table">
             <thead>
               <tr>
@@ -65,6 +66,7 @@ import { PalpitePublico } from '../../core/models';
             </tbody>
           </table>
         </div>
+        </div>
       }
     </div>
   `,
@@ -78,6 +80,10 @@ import { PalpitePublico } from '../../core/models';
     .piloto-cell { font-size: 12px; color: #444; white-space: nowrap; }
     .pts { font-weight: 700; color: #E10600; }
     .loading, .empty { text-align: center; padding: 40px; color: #6B6B6B; }
+    .table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
   `]
 })
 export class PalpitesCorridaComponent implements OnInit {
