@@ -1,9 +1,29 @@
+// ============================================================
+// COMPONENTE: FooterComponent
+// ============================================================
+// Rodapé da aplicação — presente em todas as páginas.
+// É um componente puramente visual (presentacional):
+// não tem lógica, não consome serviços, não tem estados.
+// Por isso a classe está completamente vazia (FooterComponent {}).
+//
+// Exibe:
+//   - Logo e subtítulo do campeonato
+//   - Links para Regulamento e Contato por e-mail
+//   - Linha de copyright
+//
+// Nota: "shared/components" = pasta de componentes reutilizáveis
+// que são usados em múltiplas partes da aplicação (navbar, footer).
+// Diferente de "features", que contém componentes de uma feature
+// específica (login, ranking, palpite...).
+// ============================================================
+
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-footer',
   standalone: true,
+  // RouterLink = necessário para o link interno /regulamento
   imports: [RouterLink],
   template: `
     <footer>
@@ -13,7 +33,9 @@ import { RouterLink } from '@angular/router';
           <div class="footer-sub">Campeonato Virtual de Fórmula 1 · CV2026</div>
         </div>
         <div class="footer-links">
+          <!-- routerLink = navegação interna (sem recarregar a página) -->
           <a routerLink="/regulamento">Regulamento</a>
+          <!-- href="mailto:..." = link nativo de e-mail do browser -->
           <a href="mailto:cvirtual@f1fast.com">Contato</a>
         </div>
       </div>
@@ -32,4 +54,6 @@ import { RouterLink } from '@angular/router';
     .footer-copy { max-width: 1100px; margin: 16px auto 0; font-size: 11px; color: #444; }
   `]
 })
+// Classe vazia = componente puramente visual (sem lógica).
+// Todo o conteúdo está no template acima.
 export class FooterComponent {}

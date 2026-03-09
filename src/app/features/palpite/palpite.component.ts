@@ -1,3 +1,16 @@
+// ============================================================
+// COMPONENTE: PalpiteComponent
+// ============================================================
+// Responsável pela página de envio de palpites (/palpite).
+// Esta é a página principal do campeonato — onde o usuário
+// escolhe o Pole Position, 1° ao 10° lugar e Melhor Volta
+// para a próxima corrida.
+//
+// implements OnInit → indica que este componente tem lógica
+// de inicialização (método ngOnInit) que o Angular executa
+// automaticamente quando o componente é criado.
+// ============================================================
+
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -15,6 +28,10 @@ import { Piloto, Etapa, PalpiteRequest } from '../../core/models';
         <p>Escolha Pole, 1° ao 10° e Melhor Volta. Envie antes do prazo!</p>
       </div>
 
+      <!-- Renderização condicional em 3 estados:
+           1. loading() = true → mostra "Carregando..."
+           2. loading = false mas sem etapa → mostra mensagem
+           3. tem etapa → mostra o formulário de palpite -->
       @if (loading()) {
         <div class="loading">Carregando...</div>
       } @else if (!proximaEtapa()) {
@@ -23,15 +40,22 @@ import { Piloto, Etapa, PalpiteRequest } from '../../core/models';
         <div class="bolao-layout">
           <div class="card">
             <div class="bolao-header">
+              <!-- proximaEtapa()! = o "!" diz ao TypeScript que temos certeza
+                   que o valor não é null aqui (Type Assertion) -->
               <h3>{{ proximaEtapa()!.pais }} {{ proximaEtapa()!.nome }}</h3>
+              <!-- | date = pipe de formatação de data do Angular -->
               <span class="deadline-tag">⏱ Prazo: {{ proximaEtapa()!.prazoQualify | date:'dd/MM HH:mm' }}</span>
             </div>
             <div class="bolao-form">
 
               <div class="form-row">
                 <label class="form-label pole">Pole</label>
+                <!-- [(ngModel)]="form['poleId']" = two-way binding com o objeto form -->
                 <select class="form-select" [(ngModel)]="form['poleId']">
                   <option [ngValue]="0">Selecione o Pole Position</option>
+                  <!-- @for = loop (equivalente ao *ngFor do Angular antigo)
+                       track p.id = diz ao Angular como identificar cada item
+                       para otimizar re-renderização -->
                   @for (p of pilotos(); track p.id) {
                     <option [ngValue]="p.id">{{ p.numero }} — {{ p.nome }} ({{ p.equipe }})</option>
                   }
@@ -40,6 +64,9 @@ import { Piloto, Etapa, PalpiteRequest } from '../../core/models';
 
               <div class="divider"></div>
 
+              <!-- Loop que gera automaticamente os selects de 1° ao 10°.
+                   pilotosDisponiveis(pos.key) retorna apenas os pilotos
+                   que ainda não foram escolhidos em outras posições. -->
               @for (pos of posicoes; track pos.key) {
                 <div class="form-row">
                   <label class="form-label">{{ pos.label }}</label>
@@ -71,21 +98,26 @@ import { Piloto, Etapa, PalpiteRequest } from '../../core/models';
                 </button>
               </div>
 
+              <!-- [class.error]="msgErro()" = adiciona/remove a classe CSS "error"
+                   baseado no valor do signal msgErro -->
               @if (mensagem()) {
                 <div class="msg" [class.error]="msgErro()">{{ mensagem() }}</div>
               }
             </div>
           </div>
 
+          <!-- Painel lateral com a lista de pilotos e campo de busca -->
           <div class="card">
             <div class="drivers-header">
               <h4>Grid 2026</h4>
               <input class="search-input" placeholder="Buscar piloto..." [(ngModel)]="busca">
             </div>
             <div class="drivers-list">
+              <!-- pilotosFiltrados() aplica o filtro da busca em tempo real -->
               @for (p of pilotosFiltrados(); track p.id) {
                 <div class="driver-row">
                   <div class="driver-num">{{ p.numero }}</div>
+                  <!-- [style.background]="p.corEquipe" = aplica a cor hex da equipe -->
                   <div class="team-bar" [style.background]="p.corEquipe"></div>
                   <div>
                     <div class="driver-name">{{ p.nome }}</div>
@@ -131,20 +163,27 @@ import { Piloto, Etapa, PalpiteRequest } from '../../core/models';
 export class PalpiteComponent implements OnInit {
   private api = inject(ApiService);
 
-  pilotos      = signal<Piloto[]>([]);
-  proximaEtapa = signal<Etapa | null>(null);
-  loading      = signal(true);
-  enviando     = signal(false);
-  mensagem     = signal('');
-  msgErro      = signal(false);
-  busca        = '';
+  // Signals que guardam os dados carregados da API
+  pilotos      = signal<Piloto[]>([]);          // lista de todos os 22 pilotos
+  proximaEtapa = signal<Etapa | null>(null);    // a próxima etapa aberta para palpite
+  loading      = signal(true);                  // controla o estado de carregamento
+  enviando     = signal(false);                 // true enquanto envia o palpite
+  mensagem     = signal('');                    // mensagem de sucesso ou erro
+  msgErro      = signal(false);                 // true = mensagem é de erro (vermelho)
+  busca        = '';                            // texto da barra de busca de pilotos
 
+  // Record<string, number> = dicionário onde a chave é string e o valor é number.
+  // Armazena o ID do piloto selecionado para cada posição.
+  // 0 = "nenhum selecionado" (valor padrão das options)
   form: Record<string, number> = {
     poleId: 0, pos1Id: 0, pos2Id: 0, pos3Id: 0, pos4Id: 0,
     pos5Id: 0, pos6Id: 0, pos7Id: 0, pos8Id: 0, pos9Id: 0,
     pos10Id: 0, melhorVoltaId: 0
   };
 
+  // Array de objetos descrevendo as 10 posições da corrida.
+  // "key" é o nome do campo no form, "label" é o texto exibido.
+  // Usado no template com @for para gerar os 10 selects automaticamente.
   posicoes = [
     { key: 'pos1Id', label: '1°' }, { key: 'pos2Id',  label: '2°'  },
     { key: 'pos3Id', label: '3°' }, { key: 'pos4Id',  label: '4°'  },
@@ -153,38 +192,59 @@ export class PalpiteComponent implements OnInit {
     { key: 'pos9Id', label: '9°' }, { key: 'pos10Id', label: '10°' }
   ];
 
+  // ngOnInit() = "gancho de ciclo de vida" do Angular.
+  // É chamado pelo Angular automaticamente após o componente ser criado.
+  // Aqui carregamos os dados necessários para o formulário.
   ngOnInit() {
+    // Carrega a lista de pilotos para preencher os selects
     this.api.getPilotos().subscribe(p => this.pilotos.set(p));
+
+    // Carrega a próxima etapa aberta para palpite
     this.api.getProximaEtapa().subscribe({
       next:  e => { this.proximaEtapa.set(e); this.loading.set(false); },
-      error: () => this.loading.set(false)
+      error: () => this.loading.set(false)  // mesmo no erro, remove o estado de loading
     });
   }
 
+  // Retorna a lista de pilotos disponíveis para uma posição específica.
+  // Remove os pilotos já escolhidos em outras posições para evitar duplicação.
+  // chaveAtual = ex: 'pos3Id' → não remove a seleção desta própria posição
   pilotosDisponiveis(chaveAtual: string): Piloto[] {
+    // Object.entries(this.form) = transforma o objeto em array de [chave, valor]
+    // .filter() = mantém apenas posições que: não são a atual, começam com 'pos', e já têm piloto escolhido
+    // .map() = extrai só os valores (IDs dos pilotos já selecionados)
     const selecionados = Object.entries(this.form)
       .filter(([k, v]) => k !== chaveAtual && k.startsWith('pos') && v !== 0)
       .map(([, v]) => v);
+
+    // Retorna pilotos cujo ID não está na lista de já selecionados
     return this.pilotos().filter(p => !selecionados.includes(p.id));
   }
 
+  // Filtra a lista lateral de pilotos pelo texto digitado na busca.
+  // Funciona tanto por nome quanto por equipe.
   pilotosFiltrados(): Piloto[] {
-    if (!this.busca) return this.pilotos();
+    if (!this.busca) return this.pilotos();  // sem busca → retorna todos
     const b = this.busca.toLowerCase();
     return this.pilotos().filter(p =>
       p.nome.toLowerCase().includes(b) || p.equipe.toLowerCase().includes(b)
     );
   }
 
+  // Valida o formulário e envia o palpite para a API.
   enviar() {
     const etapa = this.proximaEtapa();
     if (!etapa) return;
+
+    // Validações antes de enviar
     if (this.form['poleId'] === 0) { this.setMsg('Selecione o Pole Position.', true); return; }
+    // .some() = retorna true se ALGUM elemento satisfazer a condição
     if (this.posicoes.some(p => this.form[p.key] === 0)) { this.setMsg('Preencha todas as 10 posições.', true); return; }
     if (this.form['melhorVoltaId'] === 0) { this.setMsg('Selecione a Melhor Volta.', true); return; }
 
     this.enviando.set(true);
 
+    // Monta o objeto PalpiteRequest que será enviado como JSON para a API
     const req: PalpiteRequest = {
       etapaId: etapa.id,
       poleId: this.form['poleId'],
@@ -196,12 +256,14 @@ export class PalpiteComponent implements OnInit {
       melhorVoltaId: this.form['melhorVoltaId']
     };
 
+    // Envia para POST /palpites ou PATCH /palpites (cria ou atualiza)
     this.api.enviarPalpite(req).subscribe({
       next:  () => { this.setMsg('Palpite enviado com sucesso! ✅', false); this.enviando.set(false); },
       error: e  => { this.setMsg(e.error || 'Erro ao enviar.', true); this.enviando.set(false); }
     });
   }
 
+  // Método auxiliar privado para atualizar os dois signals de mensagem juntos.
   private setMsg(msg: string, erro: boolean) {
     this.mensagem.set(msg); this.msgErro.set(erro);
   }

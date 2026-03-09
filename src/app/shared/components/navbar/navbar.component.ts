@@ -1,3 +1,21 @@
+// ============================================================
+// COMPONENTE: NavbarComponent
+// ============================================================
+// Barra de navegação superior fixa — presente em todas as páginas.
+// Renderizada no app.component.html ou no layout principal.
+//
+// Comportamento dinâmico baseado no estado de autenticação:
+//   - Usuário DESLOGADO → mostra botões "Entrar" e "Cadastrar"
+//   - Usuário LOGADO    → mostra nome do usuário + botão "Sair"
+//   - Usuário ADMIN     → mostra também o link "Admin" em vermelho
+//
+// RouterLinkActive = diretiva que adiciona uma classe CSS ao link
+// quando a rota correspondente está ativa (URL atual).
+//
+// position: sticky; top: 0 = a navbar fica fixada no topo da
+// página mesmo ao rolar o conteúdo.
+// ============================================================
+
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -9,22 +27,36 @@ import { AuthService } from '../../../core/services/auth.service';
   imports: [CommonModule, RouterLink, RouterLinkActive],
   template: `
     <nav class="navbar">
+      <!-- Logo clicável que leva para a home -->
       <a routerLink="/" class="logo">F1<span>FAST</span></a>
 
       <div class="nav-links">
+        <!-- [routerLinkActiveOptions]="{exact:true}" é necessário para o link "Home"
+             porque "/" é prefixo de TODAS as rotas. Sem "exact:true", o link "Home"
+             ficaria ativo mesmo em /ranking, /palpite etc. -->
         <a routerLink="/"            routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Home</a>
         <a routerLink="/ranking"     routerLinkActive="active">Ranking</a>
         <a routerLink="/palpite"     routerLinkActive="active">Palpite</a>
         <a routerLink="/calendario"  routerLinkActive="active">Calendário</a>
         <a routerLink="/regulamento" routerLinkActive="active">Regulamento</a>
+        <!-- Link Admin: só aparece se o usuário for administrador.
+             auth.isAdmin() lê o signal do AuthService — atualiza automaticamente
+             quando o login/logout muda o estado. -->
         @if (auth.isAdmin()) {
           <a routerLink="/admin" routerLinkActive="active" class="admin-link">Admin</a>
         }
       </div>
 
       <div class="nav-auth">
+        <!-- auth.isLoggedIn() = lê o signal do AuthService.
+             Se logado, mostra nome e botão Sair.
+             Se não logado, mostra Entrar e Cadastrar. -->
         @if (auth.isLoggedIn()) {
+          <!-- auth.currentUser()?.nome = acessa o nome do usuário logado.
+               "?." = optional chaining: não dá erro se currentUser() for null -->
           <span class="user-name">👤 {{ auth.currentUser()?.nome }}</span>
+          <!-- (click)="auth.logout()" = chama o logout diretamente do AuthService
+               sem precisar de um método intermediário no componente -->
           <button class="btn btn-ghost" (click)="auth.logout()">Sair</button>
         } @else {
           <a routerLink="/entrar"  class="btn btn-ghost">Entrar</a>
@@ -54,5 +86,8 @@ import { AuthService } from '../../../core/services/auth.service';
   `]
 })
 export class NavbarComponent {
+  // auth é público (sem "private") porque o template acessa
+  // auth.isLoggedIn(), auth.isAdmin(), auth.currentUser() e auth.logout()
+  // diretamente no HTML. Em Angular, templates só acessam membros públicos.
   auth = inject(AuthService);
 }

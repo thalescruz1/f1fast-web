@@ -1,3 +1,21 @@
+// ============================================================
+// COMPONENTE: ResultadoComponent
+// ============================================================
+// Componente filho do AdminComponent — renderizado em /admin/resultado.
+// Permite ao administrador inserir o resultado oficial de uma corrida.
+//
+// Fluxo completo ao clicar "Salvar e Calcular Pontos":
+//   1. Frontend envia o ResultadoRequest para PATCH /admin/resultado
+//   2. A API salva o resultado no banco de dados
+//   3. A API chama automaticamente o PontuacaoService
+//   4. O PontuacaoService compara cada palpite com o resultado
+//   5. Os pontos são calculados e salvos na tabela Pontuacao
+//   6. O ranking é recalculado
+//
+// Nota: etapas encerradas aparecem com "✓" e ficam desabilitadas
+// no select para evitar reenvio acidental de resultados.
+// ============================================================
+
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,6 +29,7 @@ import { Piloto, Etapa, ResultadoRequest } from '../../../core/models';
   template: `
     <div class="header">
       <h3>Inserir Resultado</h3>
+      <!-- Select de etapas: etapas encerradas ficam desabilitadas [disabled]="e.encerrada" -->
       <select class="form-select" style="width:220px" [(ngModel)]="etapaSelecionadaId">
         <option [ngValue]="0">Selecione a etapa</option>
         @for (e of etapas(); track e.id) {
@@ -22,6 +41,7 @@ import { Piloto, Etapa, ResultadoRequest } from '../../../core/models';
     </div>
 
     <div class="form">
+      <!-- Campo de Pole Position -->
       <div class="form-row">
         <label class="form-label" style="color:#996F00">Pole</label>
         <select class="form-select" [(ngModel)]="form['poleId']">
@@ -32,6 +52,7 @@ import { Piloto, Etapa, ResultadoRequest } from '../../../core/models';
         </select>
       </div>
 
+      <!-- Campos de 1° ao 10° lugar gerados automaticamente pelo loop -->
       @for (pos of posicoes; track pos.key) {
         <div class="form-row">
           <label class="form-label">{{ pos.label }}</label>
@@ -44,6 +65,7 @@ import { Piloto, Etapa, ResultadoRequest } from '../../../core/models';
         </div>
       }
 
+      <!-- Campo de Melhor Volta -->
       <div class="form-row">
         <label class="form-label" style="color:#16A34A">Mel. Volta</label>
         <select class="form-select" [(ngModel)]="form['melhorVoltaId']">
@@ -59,7 +81,9 @@ import { Piloto, Etapa, ResultadoRequest } from '../../../core/models';
       }
 
       <div class="form-footer">
+        <!-- Botão Limpar: zera todos os selects -->
         <button class="btn btn-ghost" (click)="resetForm()">Limpar</button>
+        <!-- Botão principal: salva e dispara o cálculo de pontos -->
         <button class="btn btn-red" (click)="salvar()" [disabled]="salvando()">
           {{ salvando() ? 'Salvando...' : '💾 Salvar e Calcular Pontos' }}
         </button>
@@ -85,14 +109,18 @@ import { Piloto, Etapa, ResultadoRequest } from '../../../core/models';
 export class ResultadoComponent implements OnInit {
   private api = inject(ApiService);
 
-  pilotos  = signal<Piloto[]>([]);
-  etapas   = signal<Etapa[]>([]);
+  pilotos  = signal<Piloto[]>([]);   // 22 pilotos carregados da API
+  etapas   = signal<Etapa[]>([]);    // todas as 30 etapas
   salvando = signal(false);
   mensagem = signal('');
   msgErro  = signal(false);
 
+  // ID da etapa selecionada no select do topo. 0 = nenhuma selecionada.
   etapaSelecionadaId = 0;
 
+  // Objeto de formulário com todos os campos de resultado.
+  // Estrutura idêntica ao PalpiteComponent, mas sem restrição de pilotos únicos
+  // (o admin precisa confirmar o resultado oficial como veio).
   form: Record<string, number> = {
     poleId: 0, pos1Id: 0, pos2Id: 0, pos3Id: 0, pos4Id: 0,
     pos5Id: 0, pos6Id: 0, pos7Id: 0, pos8Id: 0, pos9Id: 0,
@@ -108,10 +136,14 @@ export class ResultadoComponent implements OnInit {
   ];
 
   ngOnInit() {
+    // Carrega pilotos e etapas em paralelo para preencher os selects
     this.api.getPilotos().subscribe(p => this.pilotos.set(p));
     this.api.getEtapas().subscribe(e => this.etapas.set(e));
   }
 
+  // Zera todos os campos do formulário para começar um novo resultado.
+  // Object.keys() = retorna um array com todas as chaves do objeto form.
+  // forEach = itera e define cada campo como 0.
   resetForm() {
     Object.keys(this.form).forEach(k => this.form[k] = 0);
     this.mensagem.set('');
@@ -119,10 +151,14 @@ export class ResultadoComponent implements OnInit {
 
   salvar() {
     if (this.etapaSelecionadaId === 0) { this.setMsg('Selecione uma etapa.', true); return; }
+
+    // Object.values() = array de todos os valores do objeto form.
+    // .some(v => v === 0) = true se ALGUM campo ainda não foi preenchido.
     if (Object.values(this.form).some(v => v === 0)) { this.setMsg('Preencha todas as posições.', true); return; }
 
     this.salvando.set(true);
 
+    // Monta o ResultadoRequest para PATCH /admin/resultado
     const req: ResultadoRequest = {
       etapaId: this.etapaSelecionadaId,
       poleId: this.form['poleId'],
@@ -134,6 +170,7 @@ export class ResultadoComponent implements OnInit {
       melhorVoltaId: this.form['melhorVoltaId']
     };
 
+    // A API salva o resultado E já dispara o cálculo de pontos automaticamente
     this.api.inserirResultado(req).subscribe({
       next:  () => { this.setMsg('Resultado salvo e pontos calculados! ✅', false); this.salvando.set(false); },
       error: e  => { this.setMsg(e.error || 'Erro ao salvar.', true); this.salvando.set(false); }

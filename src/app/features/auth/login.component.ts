@@ -1,3 +1,27 @@
+// ============================================================
+// COMPONENTE: LoginComponent
+// ============================================================
+// Responsável pela página de login (/entrar).
+//
+// Em Angular, um "Component" é a unidade básica da UI —
+// combina template (HTML), estilos (CSS) e lógica (TypeScript)
+// em um único arquivo.
+//
+// @Component = decorador que transforma uma classe TypeScript
+// num componente Angular. Define como ele se comporta.
+//
+// standalone: true → componente autossuficiente (não precisa
+//   de um NgModule para funcionar, padrão Angular 17+).
+//
+// imports → módulos que este componente usa no template:
+//   CommonModule = diretivas básicas como @if, @for
+//   FormsModule  = [(ngModel)] para two-way data binding
+//   RouterLink   = diretiva [routerLink] para navegação
+//
+// selector: 'app-login' → tag HTML usada para inserir este
+//   componente em outros templates: <app-login />
+// ============================================================
+
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -20,24 +44,33 @@ import { AuthService } from '../../core/services/auth.service';
         <div class="auth-form">
           <div class="field">
             <label>Login</label>
+            <!-- [(ngModel)]="login" = two-way binding: qualquer digitação
+                 atualiza a variável "login" automaticamente -->
             <input type="text" [(ngModel)]="login" placeholder="Seu login" class="form-input">
           </div>
           <div class="field">
             <label>Senha</label>
+            <!-- (keydown.enter)="entrar()" = chama entrar() ao pressionar Enter -->
             <input type="password" [(ngModel)]="senha" placeholder="Sua senha" class="form-input"
                    (keydown.enter)="entrar()">
           </div>
 
+          <!-- @if = renderização condicional (sintaxe Angular 17+)
+               erro() = lê o valor atual do signal (parênteses são obrigatórios) -->
           @if (erro()) {
             <div class="msg error">{{ erro() }}</div>
           }
 
+          <!-- [disabled]="carregando()" = desabilita o botão enquanto aguarda a API -->
           <button class="btn btn-red btn-full" (click)="entrar()" [disabled]="carregando()">
             {{ carregando() ? 'Entrando...' : 'Entrar' }}
           </button>
 
           <div class="auth-footer">
             Não tem conta? <a routerLink="/cadastro">Cadastre-se gratuitamente</a>
+          </div>
+          <div class="auth-footer">
+            <a routerLink="/esqueci-senha">Esqueci minha senha</a>
           </div>
         </div>
       </div>
@@ -64,19 +97,36 @@ import { AuthService } from '../../core/services/auth.service';
   `]
 })
 export class LoginComponent {
+  // inject() = forma moderna de injeção de dependência em Angular.
+  // É equivalente a usar o construtor:
+  //   constructor(private authService: AuthService, private router: Router) {}
   private authService = inject(AuthService);
   private router      = inject(Router);
 
-  login      = '';
-  senha      = '';
-  erro       = signal('');
-  carregando = signal(false);
+  // Variáveis simples para armazenar o que o usuário digita.
+  // São sincronizadas com os inputs via [(ngModel)] (two-way binding).
+  login = '';
+  senha = '';
+
+  // signal() = estado reativo do Angular (Angular 16+).
+  // Quando o valor muda com .set(), a UI atualiza automaticamente
+  // sem precisar chamar detectChanges() manualmente.
+  erro       = signal('');       // mensagem de erro exibida no formulário
+  carregando = signal(false);    // true enquanto aguarda resposta da API
 
   entrar() {
+    // Validação básica antes de chamar a API
     if (!this.login || !this.senha) { this.erro.set('Preencha login e senha.'); return; }
+
+    // Ativa o estado de carregamento (desabilita botão e muda o texto)
     this.carregando.set(true);
+
+    // Chama o AuthService que faz POST /auth/login para a API.
+    // subscribe() = "escuta" o resultado assíncrono da chamada HTTP:
+    //   next  = executado quando a API retorna sucesso (200 OK)
+    //   error = executado quando a API retorna erro (401 Unauthorized etc.)
     this.authService.login(this.login, this.senha).subscribe({
-      next:  () => this.router.navigate(['/']),
+      next:  () => this.router.navigate(['/']),   // sucesso → navega para home
       error: () => { this.erro.set('Login ou senha inválidos.'); this.carregando.set(false); }
     });
   }

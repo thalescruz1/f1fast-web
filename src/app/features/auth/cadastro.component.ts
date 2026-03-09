@@ -1,3 +1,11 @@
+// ============================================================
+// COMPONENTE: CadastroComponent
+// ============================================================
+// Responsável pela página de cadastro de novos usuários (/cadastro).
+// Coleta nome, sobrenome, login, CPF, e-mail, localização e senha.
+// Após o cadastro bem-sucedido, redireciona para /entrar.
+// ============================================================
+
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -18,9 +26,12 @@ import { AuthService } from '../../core/services/auth.service';
         </div>
 
         <div class="auth-form">
+          <!-- field-row = dois campos lado a lado (grid CSS 1fr 1fr) -->
           <div class="field-row">
             <div class="field">
               <label>Nome</label>
+              <!-- [(ngModel)]="form.nome" = two-way binding com a propriedade
+                   "nome" do objeto "form" definido na classe -->
               <input type="text" [(ngModel)]="form.nome" placeholder="Primeiro nome" class="form-input">
             </div>
             <div class="field">
@@ -30,6 +41,7 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
           <div class="field">
             <label>Login <span class="hint">(máx. 10 caracteres)</span></label>
+            <!-- maxlength="10" = limite HTML nativo que impede digitar mais de 10 chars -->
             <input type="text" [(ngModel)]="form.login" placeholder="Seu login" class="form-input" maxlength="10">
           </div>
           <div class="field">
@@ -49,6 +61,7 @@ import { AuthService } from '../../core/services/auth.service';
             <input type="password" [(ngModel)]="form.senha" placeholder="Sua senha" class="form-input" maxlength="8">
           </div>
 
+          <!-- Mensagem de feedback: verde (sucesso) ou vermelho (erro) -->
           @if (mensagem()) {
             <div class="msg" [class.error]="msgErro()">{{ mensagem() }}</div>
           }
@@ -91,24 +104,39 @@ export class CadastroComponent {
   private authService = inject(AuthService);
   private router      = inject(Router);
 
+  // Objeto simples com todos os campos do formulário.
+  // Cada propriedade está ligada a um input via [(ngModel)].
   form = { nome: '', sobrenome: '', login: '', cpf: '', email: '', localizacao: '', senha: '' };
-  mensagem   = signal('');
-  msgErro    = signal(false);
-  carregando = signal(false);
+
+  mensagem   = signal('');       // texto de feedback exibido ao usuário
+  msgErro    = signal(false);    // true = mensagem é de erro (fundo vermelho)
+  carregando = signal(false);    // true enquanto aguarda resposta da API
 
   cadastrar() {
+    // Desestruturação: extrai cada campo do objeto this.form para variáveis locais.
+    // É equivalente a: const nome = this.form.nome; const sobrenome = ...
     const { nome, sobrenome, login, cpf, email, localizacao, senha } = this.form;
+
+    // Valida que todos os campos foram preenchidos
     if (!nome || !sobrenome || !login || !cpf || !email || !localizacao || !senha) {
       this.setMsg('Preencha todos os campos.', true); return;
     }
 
     this.carregando.set(true);
+
+    // Envia o objeto form completo para POST /auth/register
     this.authService.register(this.form).subscribe({
-      next:  () => { this.setMsg('Conta criada! Redirecionando...', false); setTimeout(() => this.router.navigate(['/entrar']), 1500); },
-      error: e  => { this.setMsg(e.error || 'Erro ao cadastrar.', true); this.carregando.set(false); }
+      next: () => {
+        this.setMsg('Conta criada! Redirecionando...', false);
+        // setTimeout = espera 1,5s antes de redirecionar para que o usuário
+        // veja a mensagem de sucesso antes de ser levado para o login
+        setTimeout(() => this.router.navigate(['/entrar']), 1500);
+      },
+      error: e => { this.setMsg(e.error || 'Erro ao cadastrar.', true); this.carregando.set(false); }
     });
   }
 
+  // Método auxiliar para atualizar mensagem e flag de erro juntos.
   private setMsg(msg: string, erro: boolean) {
     this.mensagem.set(msg); this.msgErro.set(erro);
   }

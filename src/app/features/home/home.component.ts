@@ -1,3 +1,14 @@
+// ============================================================
+// COMPONENTE: HomeComponent
+// ============================================================
+// Responsável pela página inicial (/) do campeonato.
+// Exibe o banner principal (hero strip) com o cartão da
+// próxima corrida e a barra de estatísticas do campeonato.
+//
+// É uma página pública — não tem authGuard, qualquer visitante
+// pode acessar sem estar logado.
+// ============================================================
+
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -9,32 +20,38 @@ import { Etapa } from '../../core/models';
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <!-- Hero strip -->
+    <!-- Hero strip: banner escuro com título e cartão da próxima corrida -->
     <div class="hero-strip">
       <div>
         <div class="eyebrow">Temporada 2026</div>
         <div class="hero-title">CV2026</div>
         <div class="hero-sub">Campeonato Virtual F1Fast · 30 etapas · Até 35 pontos por corrida</div>
         <div class="hero-actions">
+          <!-- routerLink = navegação interna sem recarregar a página (SPA) -->
           <a routerLink="/palpite"   class="btn btn-red">Fazer Palpite</a>
           <a routerLink="/ranking"   class="btn btn-outline">Ver Ranking</a>
         </div>
       </div>
 
+      <!-- Cartão da próxima etapa — só aparece se houver uma etapa carregada -->
       @if (proxima()) {
         <div class="race-card">
           <div class="race-label">Próxima etapa</div>
+          <!-- proxima()! = o "!" garante ao TypeScript que o valor não é null
+               (já verificamos isso com o @if acima) -->
           <div class="race-flag">{{ proxima()!.pais }}</div>
           <div class="race-name">{{ proxima()!.nome }}</div>
           <div class="race-circuit">{{ proxima()!.circuito }}</div>
           <div class="race-info">
             <div class="race-info-item">
               <span class="info-label">Corrida</span>
+              <!-- | date:'dd/MM · HH:mm' = pipe de formatação de data do Angular -->
               <span class="info-val">{{ proxima()!.dataCorrida | date:'dd/MM · HH:mm' }}</span>
             </div>
             <div class="race-info-divider"></div>
             <div class="race-info-item">
               <span class="info-label">Prazo palpite</span>
+              <!-- Prazo em vermelho — classe "deadline" aplicada via CSS -->
               <span class="info-val deadline">{{ proxima()!.prazoQualify | date:'dd/MM · HH:mm' }}</span>
             </div>
           </div>
@@ -45,7 +62,7 @@ import { Etapa } from '../../core/models';
       }
     </div>
 
-    <!-- Stats -->
+    <!-- Barra de estatísticas: valores fixos do campeonato -->
     <div class="stats-bar">
       <div class="stat"><div class="stat-num">30</div><div class="stat-label">Etapas</div></div>
       <div class="stat"><div class="stat-num">35</div><div class="stat-label">Pts máx/corrida</div></div>
@@ -87,11 +104,19 @@ import { Etapa } from '../../core/models';
 })
 export class HomeComponent implements OnInit {
   private api = inject(ApiService);
+
+  // signal<Etapa | null>(null) = signal que começa sem valor (null).
+  // "Etapa | null" é um tipo union: pode ser uma Etapa ou null.
+  // Quando a API retornar a próxima etapa, este signal é atualizado
+  // e o @if(proxima()) no template exibirá automaticamente o cartão.
   proxima = signal<Etapa | null>(null);
 
   ngOnInit() {
+    // Busca a próxima etapa disponível para palpite
     this.api.getProximaEtapa().subscribe({
       next:  e => this.proxima.set(e),
+      // error: () => {} = callback vazio — se não houver etapa, simplesmente
+      // não mostramos o cartão (proxima() continua null, @if não renderiza)
       error: () => {}
     });
   }

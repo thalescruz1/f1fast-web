@@ -1,3 +1,14 @@
+// ============================================================
+// COMPONENTE: ParticipantesComponent
+// ============================================================
+// Componente filho do AdminComponent — renderizado em /admin/participantes.
+// Lista todos os usuários cadastrados no sistema e permite
+// que o admin altere a role de cada um (User ↔ Admin).
+//
+// Uso principal: promover alguém a Admin ou rebaixar de Admin para User.
+// A alteração é imediata — ao mudar o select, a API já é chamada.
+// ============================================================
+
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
@@ -9,6 +20,7 @@ import { ApiService } from '../../../core/services/api.service';
   template: `
     <div class="header">
       <h3>Participantes</h3>
+      <!-- usuarios().length = número atual de usuários carregados no signal -->
       <span class="count">{{ usuarios().length }} cadastrados</span>
     </div>
 
@@ -33,8 +45,13 @@ import { ApiService } from '../../../core/services/api.service';
               <td class="muted">{{ u.login }}</td>
               <td class="muted">{{ u.email }}</td>
               <td class="muted">{{ u.localizacao }}</td>
+              <!-- | date:'dd/MM/yyyy' = formata a data de cadastro -->
               <td class="muted">{{ u.criadoEm | date:'dd/MM/yyyy' }}</td>
               <td>
+                <!-- Select de role: [value]="u.role" pré-seleciona a role atual.
+                     (change)="alterarRole(u.id, $event)" = chama o método ao
+                     mudar a seleção, passando o id do usuário e o evento nativo.
+                     $event = o evento DOM nativo do <select> (contém o novo valor) -->
                 <select class="role-select" [value]="u.role" (change)="alterarRole(u.id, $event)">
                   <option value="User">User</option>
                   <option value="Admin">Admin</option>
@@ -46,6 +63,7 @@ import { ApiService } from '../../../core/services/api.service';
       </table>
     }
 
+    <!-- Mensagem de confirmação após alterar uma role -->
     @if (mensagem()) {
       <div class="msg" style="margin:16px 20px">{{ mensagem() }}</div>
     }
@@ -68,19 +86,31 @@ import { ApiService } from '../../../core/services/api.service';
 export class ParticipantesComponent implements OnInit {
   private api = inject(ApiService);
 
+  // signal<any[]> = tipado como "any" pois não temos uma interface
+  // específica para o usuário admin. Em projetos maiores, criaria-se
+  // uma interface AdminUsuarioDto para tipar corretamente.
   usuarios = signal<any[]>([]);
   loading  = signal(true);
-  mensagem = signal('');
+  mensagem = signal('');   // feedback após alteração de role
 
   ngOnInit() {
+    // GET /admin/usuarios → lista todos os usuários cadastrados
     this.api.getUsuarios().subscribe({
       next:  u => { this.usuarios.set(u); this.loading.set(false); },
       error: () => this.loading.set(false)
     });
   }
 
+  // Chamado quando o admin muda o select de role de um usuário.
+  // event: Event = evento nativo do DOM gerado pelo <select>
   alterarRole(id: number, event: Event) {
+    // (event.target as HTMLSelectElement) = Type Assertion:
+    // dizemos ao TypeScript que sabemos que o alvo do evento é um <select>
+    // para poder acessar a propriedade .value com segurança de tipo
     const role = (event.target as HTMLSelectElement).value;
+
+    // PATCH /admin/usuarios/{id}/role
+    // Template literal: `Role atualizada para ${role}. ✅`
     this.api.alterarRole(id, role).subscribe({
       next:  () => this.mensagem.set(`Role atualizada para ${role}. ✅`),
       error: () => this.mensagem.set('Erro ao atualizar role.')
