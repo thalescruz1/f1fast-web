@@ -37,6 +37,9 @@ import { AuthService } from '../../../core/services/auth.service';
         <a routerLink="/"            routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Home</a>
         <a routerLink="/ranking"     routerLinkActive="active">Ranking</a>
         <a routerLink="/palpite"     routerLinkActive="active">Palpite</a>
+        <!-- routerLinkActive="active" no link "/palpites" ficaria ativo também em
+             "/palpites/5" (sub-rota), o que é o comportamento desejado aqui. -->
+        <a routerLink="/palpites"    routerLinkActive="active">Apostas</a>
         <a routerLink="/calendario"  routerLinkActive="active">Calendário</a>
         <a routerLink="/regulamento" routerLinkActive="active">Regulamento</a>
         <!-- Link Admin: só aparece se o usuário for administrador.

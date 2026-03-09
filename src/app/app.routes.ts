@@ -45,6 +45,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/palpite/palpite.component').then(m => m.PalpiteComponent)
   },
 
+  // Índice de palpites de todas as etapas — público
+  // Exibe os 30 cards de corrida; clicáveis apenas após o prazo expirar.
+  // IMPORTANTE: esta rota DEVE vir ANTES de 'palpites/:etapaId'.
+  // Angular avalia rotas em ordem: se ':etapaId' viesse primeiro,
+  // a URL "/palpites" poderia ser tratada como parâmetro vazio.
+  {
+    path: 'palpites',
+    loadComponent: () => import('./features/palpites/palpites.component').then(m => m.PalpitesComponent)
+  },
+
   // Ver palpites de uma corrida — público (após prazo)
   // ":etapaId" é um parâmetro dinâmico na URL (ex: /palpites/5)
   {
