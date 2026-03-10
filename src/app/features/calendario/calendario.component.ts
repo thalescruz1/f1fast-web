@@ -73,7 +73,7 @@ import { Etapa } from '../../core/models';
   styles: [`
     .cal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
     .cal-item { background: white; border: 1px solid #E0E0E0; border-radius: 8px; padding: 16px; cursor: default; transition: all 0.15s; text-decoration: none; color: inherit; display: block; }
-    .cal-item.next { border-left: 3px solid #E10600; }
+    .cal-item.next { border-left: 3px solid #0057E1; }
     .cal-item.sprint { border-left: 3px solid #E5A800; }
     .cal-item.done { opacity: 0.5; }
     .cal-item[href]:hover { border-color: #BDBDBD; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
@@ -81,7 +81,7 @@ import { Etapa } from '../../core/models';
     .cal-num { font-size: 11px; color: #6B6B6B; font-weight: 500; }
     .cal-tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; text-transform: uppercase; }
     .cal-tag.sprint { background: rgba(229,168,0,0.12); color: #996F00; }
-    .cal-tag.next { background: rgba(225,6,0,0.1); color: #E10600; }
+    .cal-tag.next { background: rgba(0,87,225,0.1); color: #0057E1; }
     .cal-tag.done { background: rgba(0,0,0,0.06); color: #6B6B6B; }
     .cal-flag { font-size: 24px; margin-bottom: 6px; }
     .cal-name { font-size: 14px; font-weight: 700; }

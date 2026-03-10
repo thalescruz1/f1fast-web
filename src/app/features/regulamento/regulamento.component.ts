@@ -57,7 +57,7 @@ import { Component } from '@angular/core';
   `,
   styles: [`
     .reg-card { padding: 32px; max-width: 720px; }
-    .reg-card h3 { font-size: 16px; font-weight: 700; margin: 24px 0 10px; color: #1A1A1A; border-left: 3px solid #E10600; padding-left: 12px; }
+    .reg-card h3 { font-size: 16px; font-weight: 700; margin: 24px 0 10px; color: #1A1A1A; border-left: 3px solid #0057E1; padding-left: 12px; }
     .reg-card h3:first-child { margin-top: 0; }
     .reg-card p { font-size: 14px; color: #444; line-height: 1.7; margin-bottom: 10px; }
     .reg-card ul, .reg-card ol { padding-left: 20px; margin-bottom: 10px; }
@@ -65,9 +65,9 @@ import { Component } from '@angular/core';
     .pts-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
     .pts-table th { font-size: 12px; font-weight: 600; color: #6B6B6B; text-transform: uppercase; letter-spacing: 1px; padding: 8px 12px; text-align: left; border-bottom: 2px solid #E0E0E0; }
     .pts-table td { padding: 10px 12px; border-bottom: 1px solid #E0E0E0; font-size: 14px; }
-    .pts-table td:last-child { font-weight: 700; color: #E10600; }
+    .pts-table td:last-child { font-weight: 700; color: #0057E1; }
     .contact { margin-top: 24px; padding-top: 20px; border-top: 1px solid #E0E0E0; font-size: 13px; color: #6B6B6B; }
-    .contact a { color: #E10600; }
+    .contact a { color: #0057E1; }
   `]
 })
 export class RegulamentoComponent {}

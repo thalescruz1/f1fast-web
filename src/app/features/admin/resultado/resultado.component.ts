@@ -97,13 +97,13 @@ import { Piloto, Etapa, ResultadoRequest } from '../../../core/models';
     .form-row { display: grid; grid-template-columns: 100px 1fr; gap: 12px; align-items: center; }
     .form-label { font-size: 12px; font-weight: 600; color: #6B6B6B; text-align: right; }
     .form-select { width: 100%; padding: 9px 12px; background: white; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 13px; font-family: inherit; }
-    .form-select:focus { outline: none; border-color: #E10600; }
+    .form-select:focus { outline: none; border-color: #0057E1; }
     .msg { padding: 10px 14px; border-radius: 6px; font-size: 13px; background: #dcfce7; color: #166534; }
     .msg.error { background: #fee2e2; color: #991b1b; }
     .form-footer { display: flex; justify-content: flex-end; gap: 8px; padding-top: 12px; border-top: 1px solid #E0E0E0; }
     .btn { padding: 8px 16px; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
     .btn-ghost { background: transparent; border: 1px solid #E0E0E0; color: #6B6B6B; }
-    .btn-red { background: #E10600; color: white; }
+    .btn-red { background: #0057E1; color: white; }
   `]
 })
 export class ResultadoComponent implements OnInit {

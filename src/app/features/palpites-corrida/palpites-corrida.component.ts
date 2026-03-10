@@ -78,7 +78,7 @@ import { PalpitePublico } from '../../core/models';
     .pname { font-weight: 600; font-size: 13px; }
     .plogin { font-size: 11px; color: #6B6B6B; }
     .piloto-cell { font-size: 12px; color: #444; white-space: nowrap; }
-    .pts { font-weight: 700; color: #E10600; }
+    .pts { font-weight: 700; color: #0057E1; }
     .loading, .empty { text-align: center; padding: 40px; color: #6B6B6B; }
     .table-wrapper {
   width: 100%;

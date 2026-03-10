@@ -135,13 +135,13 @@ import { Piloto, Etapa, PalpiteRequest } from '../../core/models';
     .bolao-layout { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
     .bolao-header { padding: 16px 20px; border-bottom: 1px solid #E0E0E0; display: flex; justify-content: space-between; align-items: center; }
     .bolao-header h3 { font-size: 15px; font-weight: 700; }
-    .deadline-tag { font-size: 12px; color: #E10600; font-weight: 600; background: rgba(225,6,0,0.07); padding: 4px 10px; border-radius: 20px; }
+    .deadline-tag { font-size: 12px; color: #0057E1; font-weight: 600; background: rgba(0,87,225,0.07); padding: 4px 10px; border-radius: 20px; }
     .bolao-form { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
     .form-row { display: grid; grid-template-columns: 80px 1fr; gap: 12px; align-items: center; }
     .form-label { font-size: 12px; font-weight: 600; color: #6B6B6B; text-align: right; }
     .form-label.pole { color: #E5A800; } .form-label.mv { color: #16A34A; }
     .form-select { width: 100%; padding: 9px 12px; background: white; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 13px; }
-    .form-select:focus { outline: none; border-color: #E10600; }
+    .form-select:focus { outline: none; border-color: #0057E1; }
     .divider { height: 1px; background: #E0E0E0; margin: 4px 0; }
     .form-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #E0E0E0; }
     .form-info { font-size: 12px; color: #6B6B6B; }

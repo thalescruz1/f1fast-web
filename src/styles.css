@@ -52,6 +52,6 @@ body {
   transition: opacity 0.15s;
 }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-red     { background: #E10600; color: white; }
+.btn-red     { background: #0057E1; color: white; }
 .btn-ghost   { background: transparent; border: 1px solid #E0E0E0; color: #6B6B6B; }
 .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; }

@@ -46,7 +46,7 @@ import { RouterLink } from '@angular/router';
     footer { background: #1A1A1A; padding: 32px; margin-top: 48px; }
     .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
     .footer-logo { font-family: 'Orbitron', monospace; font-size: 16px; color: white; letter-spacing: 2px; }
-    .footer-logo span { color: #E10600; }
+    .footer-logo span { color: #0057E1; }
     .footer-sub { font-size: 12px; color: rgba(255,255,255,0.35); margin-top: 4px; }
     .footer-links { display: flex; gap: 20px; }
     .footer-links a { font-size: 12px; color: rgba(255,255,255,0.4); text-decoration: none; }

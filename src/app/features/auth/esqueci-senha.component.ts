@@ -67,22 +67,22 @@ import { ApiService } from '../../core/services/api.service';
     .auth-page { min-height: calc(100vh - 56px); display: flex; align-items: center; justify-content: center; background: #F5F5F5; padding: 24px; }
     .auth-card { width: 100%; max-width: 400px; padding: 32px; }
     .auth-logo { font-family: 'Orbitron', monospace; font-size: 20px; font-weight: 700; letter-spacing: 2px; margin-bottom: 8px; }
-    .auth-logo span { color: #E10600; }
+    .auth-logo span { color: #0057E1; }
     .auth-header h2 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
     .auth-header p { font-size: 13px; color: #6B6B6B; margin-bottom: 24px; }
     .auth-form { display: flex; flex-direction: column; gap: 16px; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field label { font-size: 13px; font-weight: 600; color: #1A1A1A; }
     .form-input { padding: 10px 12px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px; font-family: inherit; }
-    .form-input:focus { outline: none; border-color: #E10600; }
+    .form-input:focus { outline: none; border-color: #0057E1; }
     .msg { padding: 10px 14px; border-radius: 6px; font-size: 13px; }
     .msg.error { background: #fee2e2; color: #991b1b; }
     .msg.success { background: #dcfce7; color: #166534; line-height: 1.5; }
     .btn { padding: 11px 22px; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; }
-    .btn-red { background: #E10600; color: white; }
+    .btn-red { background: #0057E1; color: white; }
     .btn-full { width: 100%; }
     .auth-footer { font-size: 13px; color: #6B6B6B; text-align: center; }
-    .auth-footer a { color: #E10600; text-decoration: none; font-weight: 600; }
+    .auth-footer a { color: #0057E1; text-decoration: none; font-weight: 600; }
   `]
 })
 export class EsqueciSenhaComponent {

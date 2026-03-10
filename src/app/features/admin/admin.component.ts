@@ -68,7 +68,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
     .menu-label { font-size: 10px; font-weight: 700; color: #6B6B6B; letter-spacing: 2px; text-transform: uppercase; padding: 8px 12px; }
     .menu-item { padding: 9px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; color: #6B6B6B; cursor: pointer; text-decoration: none; display: block; transition: background 0.12s; }
     .menu-item:hover { background: #F5F5F5; color: #1A1A1A; }
-    .menu-item.active { background: rgba(225,6,0,0.07); color: #E10600; font-weight: 600; }
+    .menu-item.active { background: rgba(0,87,225,0.07); color: #0057E1; font-weight: 600; }
     .admin-content { min-height: 400px; }
     @media (max-width: 768px) { .admin-layout { grid-template-columns: 1fr; } }
   `]

@@ -104,7 +104,7 @@ import { AuthService } from '../../../core/services/auth.service';
     .navbar-top { display: contents; }
 
     .logo { font-family: 'Orbitron', monospace; font-size: 18px; color: white; letter-spacing: 2px; text-decoration: none; }
-    .logo span { color: #E10600; }
+    .logo span { color: #0057E1; }
 
     /* Hambúrguer invisível em desktop */
     .hamburger { display: none; }
@@ -112,13 +112,13 @@ import { AuthService } from '../../../core/services/auth.service';
     .nav-links { display: flex; gap: 2px; }
     .nav-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 14px; border-radius: 4px; transition: color 0.15s; }
     .nav-links a:hover, .nav-links a.active { color: white; }
-    .admin-link { color: #E10600 !important; }
+    .admin-link { color: #0057E1 !important; }
 
     .nav-auth { display: flex; gap: 8px; align-items: center; }
     .user-name { font-size: 13px; color: rgba(255,255,255,0.7); }
     .btn { padding: 7px 16px; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: inline-block; }
     .btn-ghost { background: transparent; color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.2); }
-    .btn-red { background: #E10600; color: white; }
+    .btn-red { background: #0057E1; color: white; }
 
     /* ═══════════════════════════════════════════════════
        MOBILE (≤ 768px)

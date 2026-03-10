@@ -136,13 +136,13 @@ import { ApiService } from '../../../core/services/api.service';
     /* Input de data/hora */
     .dt-input { padding: 6px 8px; border: 1px solid #E0E0E0; border-radius: 5px;
                 font-size: 12px; font-family: inherit; color: #1A1A1A; }
-    .dt-input:focus { outline: none; border-color: #E10600; }
+    .dt-input:focus { outline: none; border-color: #0057E1; }
     .dt-input:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* Botões */
     .btn { padding: 6px 14px; border-radius: 4px; font-size: 12px; font-weight: 600;
            cursor: pointer; border: none; }
-    .btn-red { background: #E10600; color: white; }
+    .btn-red { background: #0057E1; color: white; }
     .btn-red:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-sm { padding: 5px 12px; }
 
