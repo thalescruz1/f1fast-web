@@ -38,6 +38,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/calendario/calendario.component').then(m => m.CalendarioComponent)
   },
 
+  // Detalhes de uma etapa (horários, pista, recordista, distância) — público
+  {
+    path: 'etapa/:id',
+    loadComponent: () => import('./features/etapa-detalhe/etapa-detalhe.component').then(m => m.EtapaDetalheComponent)
+  },
+
   // Fazer palpite — PROTEGIDO: requer login (authGuard)
   {
     path: 'palpite',

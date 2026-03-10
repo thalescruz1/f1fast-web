@@ -6,9 +6,10 @@
 // escolhe o Pole Position, 1° ao 10° lugar e Melhor Volta
 // para a próxima corrida.
 //
-// implements OnInit → indica que este componente tem lógica
-// de inicialização (método ngOnInit) que o Angular executa
-// automaticamente quando o componente é criado.
+// Modificações:
+//   - Exibe o nome da pista (circuito) no cabeçalho
+//   - Após envio bem-sucedido, exibe tela de confirmação
+//     com o palpite registrado para conferência
 // ============================================================
 
 import { Component, OnInit, inject, signal } from '@angular/core';
@@ -17,125 +18,159 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { Piloto, Etapa, PalpiteRequest } from '../../core/models';
 
+/** Palpite confirmado para exibição na tela de conferência */
+interface PalpiteConfirmado {
+  etapaNome:     string;
+  circuito:      string;
+  pole:          string;
+  posicoes:      string[];  // 10 posições (1° ao 10°)
+  melhorVolta:   string;
+}
+
 @Component({
   selector: 'app-palpite',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="page">
-      <div class="section-head">
-        <h2>Fazer Palpite</h2>
-        <p>Escolha Pole, 1° ao 10° e Melhor Volta. Envie antes do prazo!</p>
-      </div>
 
-      <!-- Renderização condicional em 3 estados:
-           1. loading() = true → mostra "Carregando..."
-           2. loading = false mas sem etapa → mostra mensagem
-           3. tem etapa → mostra o formulário de palpite -->
-      @if (loading()) {
-        <div class="loading">Carregando...</div>
-      } @else if (!proximaEtapa()) {
-        <div class="card empty">Não há etapas disponíveis para palpite no momento.</div>
-      } @else {
-        <div class="bolao-layout">
-          <div class="card">
-            <div class="bolao-header">
-              <!-- proximaEtapa()! = o "!" diz ao TypeScript que temos certeza
-                   que o valor não é null aqui (Type Assertion) -->
-              <h3>{{ proximaEtapa()!.pais }} {{ proximaEtapa()!.nome }}</h3>
-              <!-- | date = pipe de formatação de data do Angular -->
-              <span class="deadline-tag">⏱ Prazo: {{ proximaEtapa()!.prazoQualify | date:'dd/MM HH:mm' }}</span>
+      <!-- ===== TELA DE CONFIRMAÇÃO (após envio bem-sucedido) ===== -->
+      @if (palpiteConfirmado()) {
+        <div class="section-head">
+          <h2>Palpite Registrado ✅</h2>
+          <p>Confira abaixo o seu palpite para o {{ palpiteConfirmado()!.etapaNome }}.</p>
+        </div>
+
+        <div class="card confirmacao-card">
+          <div class="conf-header">
+            <div class="conf-title">{{ palpiteConfirmado()!.etapaNome }}</div>
+            <div class="conf-sub">{{ palpiteConfirmado()!.circuito }}</div>
+          </div>
+          <div class="conf-body">
+            <div class="conf-item pole">
+              <span class="conf-label">Pole Position</span>
+              <span class="conf-value">{{ palpiteConfirmado()!.pole }}</span>
             </div>
-            <div class="bolao-form">
-
-              <div class="form-row">
-                <label class="form-label pole">Pole</label>
-                <!-- [(ngModel)]="form['poleId']" = two-way binding com o objeto form -->
-                <select class="form-select" [(ngModel)]="form['poleId']">
-                  <option [ngValue]="0">Selecione o Pole Position</option>
-                  <!-- @for = loop (equivalente ao *ngFor do Angular antigo)
-                       track p.id = diz ao Angular como identificar cada item
-                       para otimizar re-renderização -->
-                  @for (p of pilotos(); track p.id) {
-                    <option [ngValue]="p.id">{{ p.numero }} — {{ p.nome }} ({{ p.equipe }})</option>
-                  }
-                </select>
+            @for (pos of palpiteConfirmado()!.posicoes; track $index) {
+              <div class="conf-item">
+                <span class="conf-label">{{ $index + 1 }}°</span>
+                <span class="conf-value">{{ pos }}</span>
               </div>
+            }
+            <div class="conf-item mv">
+              <span class="conf-label">Melhor Volta</span>
+              <span class="conf-value">{{ palpiteConfirmado()!.melhorVolta }}</span>
+            </div>
+          </div>
+          <div class="conf-footer">
+            <button class="btn btn-outline" (click)="editarPalpite()">Alterar Palpite</button>
+          </div>
+        </div>
+      }
 
-              <div class="divider"></div>
+      <!-- ===== FORMULÁRIO DE PALPITE ===== -->
+      @else {
+        <div class="section-head">
+          <h2>Fazer Palpite</h2>
+          <p>Escolha Pole, 1° ao 10° e Melhor Volta. Envie antes do prazo!</p>
+        </div>
 
-              <!-- Loop que gera automaticamente os selects de 1° ao 10°.
-                   pilotosDisponiveis(pos.key) retorna apenas os pilotos
-                   que ainda não foram escolhidos em outras posições. -->
-              @for (pos of posicoes; track pos.key) {
+        @if (loading()) {
+          <div class="loading">Carregando...</div>
+        } @else if (!proximaEtapa()) {
+          <div class="card empty">Não há etapas disponíveis para palpite no momento.</div>
+        } @else {
+          <div class="bolao-layout">
+            <div class="card">
+              <div class="bolao-header">
+                <div>
+                  <h3>{{ proximaEtapa()!.pais }} {{ proximaEtapa()!.nome }}</h3>
+                  <!-- Nome da pista (circuito) -->
+                  <div class="circuit-name">📍 {{ proximaEtapa()!.circuito }}</div>
+                </div>
+                <span class="deadline-tag">⏱ Prazo: {{ proximaEtapa()!.prazoQualify | date:'dd/MM HH:mm' }}</span>
+              </div>
+              <div class="bolao-form">
+
                 <div class="form-row">
-                  <label class="form-label">{{ pos.label }}</label>
-                  <select class="form-select" [(ngModel)]="form[pos.key]">
-                    <option [ngValue]="0">Selecione</option>
-                    @for (p of pilotosDisponiveis(pos.key); track p.id) {
+                  <label class="form-label pole">Pole</label>
+                  <select class="form-select" [(ngModel)]="form['poleId']">
+                    <option [ngValue]="0">Selecione o Pole Position</option>
+                    @for (p of pilotos(); track p.id) {
                       <option [ngValue]="p.id">{{ p.numero }} — {{ p.nome }} ({{ p.equipe }})</option>
                     }
                   </select>
                 </div>
-              }
 
-              <div class="divider"></div>
+                <div class="divider"></div>
 
-              <div class="form-row">
-                <label class="form-label mv">Mel. Volta</label>
-                <select class="form-select" [(ngModel)]="form['melhorVoltaId']">
-                  <option [ngValue]="0">Selecione a Melhor Volta</option>
-                  @for (p of pilotos(); track p.id) {
-                    <option [ngValue]="p.id">{{ p.numero }} — {{ p.nome }}</option>
-                  }
-                </select>
-              </div>
-
-              <div class="form-footer">
-                <span class="form-info">Máximo: <strong>35 pontos</strong></span>
-                <button class="btn btn-red" (click)="enviar()" [disabled]="enviando()">
-                  {{ enviando() ? 'Enviando...' : 'Enviar Palpite' }}
-                </button>
-              </div>
-
-              <!-- [class.error]="msgErro()" = adiciona/remove a classe CSS "error"
-                   baseado no valor do signal msgErro -->
-              @if (mensagem()) {
-                <div class="msg" [class.error]="msgErro()">{{ mensagem() }}</div>
-              }
-            </div>
-          </div>
-
-          <!-- Painel lateral com a lista de pilotos e campo de busca -->
-          <div class="card">
-            <div class="drivers-header">
-              <h4>Grid 2026</h4>
-              <input class="search-input" placeholder="Buscar piloto..." [(ngModel)]="busca">
-            </div>
-            <div class="drivers-list">
-              <!-- pilotosFiltrados() aplica o filtro da busca em tempo real -->
-              @for (p of pilotosFiltrados(); track p.id) {
-                <div class="driver-row">
-                  <div class="driver-num">{{ p.numero }}</div>
-                  <!-- [style.background]="p.corEquipe" = aplica a cor hex da equipe -->
-                  <div class="team-bar" [style.background]="p.corEquipe"></div>
-                  <div>
-                    <div class="driver-name">{{ p.nome }}</div>
-                    <div class="driver-team">{{ p.equipe }}</div>
+                @for (pos of posicoes; track pos.key) {
+                  <div class="form-row">
+                    <label class="form-label">{{ pos.label }}</label>
+                    <select class="form-select" [(ngModel)]="form[pos.key]">
+                      <option [ngValue]="0">Selecione</option>
+                      @for (p of pilotosDisponiveis(pos.key); track p.id) {
+                        <option [ngValue]="p.id">{{ p.numero }} — {{ p.nome }} ({{ p.equipe }})</option>
+                      }
+                    </select>
                   </div>
+                }
+
+                <div class="divider"></div>
+
+                <div class="form-row">
+                  <label class="form-label mv">Mel. Volta</label>
+                  <select class="form-select" [(ngModel)]="form['melhorVoltaId']">
+                    <option [ngValue]="0">Selecione a Melhor Volta</option>
+                    @for (p of pilotos(); track p.id) {
+                      <option [ngValue]="p.id">{{ p.numero }} — {{ p.nome }}</option>
+                    }
+                  </select>
                 </div>
-              }
+
+                <div class="form-footer">
+                  <span class="form-info">Máximo: <strong>35 pontos</strong></span>
+                  <button class="btn btn-red" (click)="enviar()" [disabled]="enviando()">
+                    {{ enviando() ? 'Enviando...' : 'Enviar Palpite' }}
+                  </button>
+                </div>
+
+                @if (mensagem()) {
+                  <div class="msg" [class.error]="msgErro()">{{ mensagem() }}</div>
+                }
+              </div>
+            </div>
+
+            <!-- Painel lateral com a lista de pilotos e campo de busca -->
+            <div class="card">
+              <div class="drivers-header">
+                <h4>Grid 2026</h4>
+                <input class="search-input" placeholder="Buscar piloto..." [(ngModel)]="busca">
+              </div>
+              <div class="drivers-list">
+                @for (p of pilotosFiltrados(); track p.id) {
+                  <div class="driver-row">
+                    <div class="driver-num">{{ p.numero }}</div>
+                    <div class="team-bar" [style.background]="p.corEquipe"></div>
+                    <div>
+                      <div class="driver-name">{{ p.nome }}</div>
+                      <div class="driver-team">{{ p.equipe }}</div>
+                    </div>
+                  </div>
+                }
+              </div>
             </div>
           </div>
-        </div>
+        }
       }
     </div>
   `,
   styles: [`
     .bolao-layout { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
-    .bolao-header { padding: 16px 20px; border-bottom: 1px solid #E0E0E0; display: flex; justify-content: space-between; align-items: center; }
-    .bolao-header h3 { font-size: 15px; font-weight: 700; }
-    .deadline-tag { font-size: 12px; color: #0057E1; font-weight: 600; background: rgba(0,87,225,0.07); padding: 4px 10px; border-radius: 20px; }
+    .bolao-header { padding: 16px 20px; border-bottom: 1px solid #E0E0E0; display: flex; justify-content: space-between; align-items: flex-start; }
+    .bolao-header h3 { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+    .circuit-name { font-size: 12px; color: #6B6B6B; margin-top: 2px; }
+    .deadline-tag { font-size: 12px; color: #0057E1; font-weight: 600; background: rgba(0,87,225,0.07); padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
     .bolao-form { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
     .form-row { display: grid; grid-template-columns: 80px 1fr; gap: 12px; align-items: center; }
     .form-label { font-size: 12px; font-weight: 600; color: #6B6B6B; text-align: right; }
@@ -158,32 +193,40 @@ import { Piloto, Etapa, PalpiteRequest } from '../../core/models';
     .driver-team { font-size: 11px; color: #6B6B6B; }
     .loading, .empty { text-align: center; padding: 40px; color: #6B6B6B; }
     @media (max-width: 768px) { .bolao-layout { grid-template-columns: 1fr; } }
+    /* Tela de confirmação */
+    .confirmacao-card { max-width: 540px; }
+    .conf-header { padding: 16px 20px; border-bottom: 1px solid #E0E0E0; }
+    .conf-title { font-size: 16px; font-weight: 700; }
+    .conf-sub { font-size: 12px; color: #6B6B6B; margin-top: 2px; }
+    .conf-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 8px; }
+    .conf-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #F5F5F5; border-radius: 6px; }
+    .conf-item.pole { border-left: 3px solid #E5A800; }
+    .conf-item.mv   { border-left: 3px solid #16A34A; }
+    .conf-label { font-size: 12px; font-weight: 600; color: #6B6B6B; min-width: 80px; }
+    .conf-value { font-size: 13px; font-weight: 600; }
+    .conf-footer { padding: 16px 20px; border-top: 1px solid #E0E0E0; }
+    .btn-outline { background: white; border: 1px solid #0057E1; color: #0057E1; padding: 9px 18px; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .btn-outline:hover { background: rgba(0,87,225,0.05); }
   `]
 })
 export class PalpiteComponent implements OnInit {
   private api = inject(ApiService);
 
-  // Signals que guardam os dados carregados da API
-  pilotos      = signal<Piloto[]>([]);          // lista de todos os 22 pilotos
-  proximaEtapa = signal<Etapa | null>(null);    // a próxima etapa aberta para palpite
-  loading      = signal(true);                  // controla o estado de carregamento
-  enviando     = signal(false);                 // true enquanto envia o palpite
-  mensagem     = signal('');                    // mensagem de sucesso ou erro
-  msgErro      = signal(false);                 // true = mensagem é de erro (vermelho)
-  busca        = '';                            // texto da barra de busca de pilotos
+  pilotos          = signal<Piloto[]>([]);
+  proximaEtapa     = signal<Etapa | null>(null);
+  loading          = signal(true);
+  enviando         = signal(false);
+  mensagem         = signal('');
+  msgErro          = signal(false);
+  busca            = '';
+  palpiteConfirmado = signal<PalpiteConfirmado | null>(null);
 
-  // Record<string, number> = dicionário onde a chave é string e o valor é number.
-  // Armazena o ID do piloto selecionado para cada posição.
-  // 0 = "nenhum selecionado" (valor padrão das options)
   form: Record<string, number> = {
     poleId: 0, pos1Id: 0, pos2Id: 0, pos3Id: 0, pos4Id: 0,
     pos5Id: 0, pos6Id: 0, pos7Id: 0, pos8Id: 0, pos9Id: 0,
     pos10Id: 0, melhorVoltaId: 0
   };
 
-  // Array de objetos descrevendo as 10 posições da corrida.
-  // "key" é o nome do campo no form, "label" é o texto exibido.
-  // Usado no template com @for para gerar os 10 selects automaticamente.
   posicoes = [
     { key: 'pos1Id', label: '1°' }, { key: 'pos2Id',  label: '2°'  },
     { key: 'pos3Id', label: '3°' }, { key: 'pos4Id',  label: '4°'  },
@@ -192,59 +235,45 @@ export class PalpiteComponent implements OnInit {
     { key: 'pos9Id', label: '9°' }, { key: 'pos10Id', label: '10°' }
   ];
 
-  // ngOnInit() = "gancho de ciclo de vida" do Angular.
-  // É chamado pelo Angular automaticamente após o componente ser criado.
-  // Aqui carregamos os dados necessários para o formulário.
   ngOnInit() {
-    // Carrega a lista de pilotos para preencher os selects
     this.api.getPilotos().subscribe(p => this.pilotos.set(p));
-
-    // Carrega a próxima etapa aberta para palpite
     this.api.getProximaEtapa().subscribe({
       next:  e => { this.proximaEtapa.set(e); this.loading.set(false); },
-      error: () => this.loading.set(false)  // mesmo no erro, remove o estado de loading
+      error: () => this.loading.set(false)
     });
   }
 
-  // Retorna a lista de pilotos disponíveis para uma posição específica.
-  // Remove os pilotos já escolhidos em outras posições para evitar duplicação.
-  // chaveAtual = ex: 'pos3Id' → não remove a seleção desta própria posição
   pilotosDisponiveis(chaveAtual: string): Piloto[] {
-    // Object.entries(this.form) = transforma o objeto em array de [chave, valor]
-    // .filter() = mantém apenas posições que: não são a atual, começam com 'pos', e já têm piloto escolhido
-    // .map() = extrai só os valores (IDs dos pilotos já selecionados)
     const selecionados = Object.entries(this.form)
       .filter(([k, v]) => k !== chaveAtual && k.startsWith('pos') && v !== 0)
       .map(([, v]) => v);
-
-    // Retorna pilotos cujo ID não está na lista de já selecionados
     return this.pilotos().filter(p => !selecionados.includes(p.id));
   }
 
-  // Filtra a lista lateral de pilotos pelo texto digitado na busca.
-  // Funciona tanto por nome quanto por equipe.
   pilotosFiltrados(): Piloto[] {
-    if (!this.busca) return this.pilotos();  // sem busca → retorna todos
+    if (!this.busca) return this.pilotos();
     const b = this.busca.toLowerCase();
     return this.pilotos().filter(p =>
       p.nome.toLowerCase().includes(b) || p.equipe.toLowerCase().includes(b)
     );
   }
 
-  // Valida o formulário e envia o palpite para a API.
+  /** Resolve o ID de um piloto para o seu nome exibível */
+  private nomePiloto(id: number): string {
+    const p = this.pilotos().find(x => x.id === id);
+    return p ? `${p.numero} — ${p.nome}` : '—';
+  }
+
   enviar() {
     const etapa = this.proximaEtapa();
     if (!etapa) return;
 
-    // Validações antes de enviar
     if (this.form['poleId'] === 0) { this.setMsg('Selecione o Pole Position.', true); return; }
-    // .some() = retorna true se ALGUM elemento satisfazer a condição
     if (this.posicoes.some(p => this.form[p.key] === 0)) { this.setMsg('Preencha todas as 10 posições.', true); return; }
     if (this.form['melhorVoltaId'] === 0) { this.setMsg('Selecione a Melhor Volta.', true); return; }
 
     this.enviando.set(true);
 
-    // Monta o objeto PalpiteRequest que será enviado como JSON para a API
     const req: PalpiteRequest = {
       etapaId: etapa.id,
       poleId: this.form['poleId'],
@@ -256,14 +285,28 @@ export class PalpiteComponent implements OnInit {
       melhorVoltaId: this.form['melhorVoltaId']
     };
 
-    // Envia para POST /palpites ou PATCH /palpites (cria ou atualiza)
     this.api.enviarPalpite(req).subscribe({
-      next:  () => { this.setMsg('Palpite enviado com sucesso! ✅', false); this.enviando.set(false); },
-      error: e  => { this.setMsg(e.error || 'Erro ao enviar.', true); this.enviando.set(false); }
+      next: () => {
+        this.enviando.set(false);
+        // Monta a tela de confirmação com os nomes dos pilotos escolhidos
+        this.palpiteConfirmado.set({
+          etapaNome:   etapa.nome,
+          circuito:    etapa.circuito,
+          pole:        this.nomePiloto(this.form['poleId']),
+          posicoes:    this.posicoes.map(p => this.nomePiloto(this.form[p.key])),
+          melhorVolta: this.nomePiloto(this.form['melhorVoltaId'])
+        });
+      },
+      error: e => { this.setMsg(e.error || 'Erro ao enviar.', true); this.enviando.set(false); }
     });
   }
 
-  // Método auxiliar privado para atualizar os dois signals de mensagem juntos.
+  /** Volta para o formulário para editar o palpite */
+  editarPalpite() {
+    this.palpiteConfirmado.set(null);
+    this.mensagem.set('');
+  }
+
   private setMsg(msg: string, erro: boolean) {
     this.mensagem.set(msg); this.msgErro.set(erro);
   }

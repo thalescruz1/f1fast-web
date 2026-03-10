@@ -19,7 +19,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import {
   Piloto, Etapa, PalpiteRequest, PalpitePublico,
-  RankingItem, ResultadoRequest
+  RankingItem, ResultadoRequest, ResultadoPublico
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -81,6 +81,16 @@ export class ApiService {
   /** GET /api/ranking → classificação geral de todos os participantes */
   getRanking() {
     return this.http.get<RankingItem[]>(`${this.base}/ranking`);
+  }
+
+  /** GET /api/ranking/ultimo-gp → nome do último GP com resultado cadastrado */
+  getUltimoGp() {
+    return this.http.get<{ nomeGp: string | null }>(`${this.base}/ranking/ultimo-gp`);
+  }
+
+  /** GET /api/palpites/{etapaId}/resultado → resultado oficial público */
+  getResultadoPublico(etapaId: number) {
+    return this.http.get<ResultadoPublico>(`${this.base}/palpites/${etapaId}/resultado`);
   }
 
   // ──────────────────────────────────────────────────────────

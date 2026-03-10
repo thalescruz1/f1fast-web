@@ -47,12 +47,14 @@ import { ApiService } from '../../core/services/api.service';
           } @else if (!concluido()) {
             <div class="field">
               <label>Nova senha</label>
-              <input type="password" [(ngModel)]="novaSenha" placeholder="Mínimo 6 caracteres" class="form-input">
+              <input type="password" [(ngModel)]="novaSenha" placeholder="Entre 6 e 8 caracteres"
+                     maxlength="8" class="form-input">
+              <span class="field-hint">{{ novaSenha.length }}/8 caracteres</span>
             </div>
             <div class="field">
               <label>Confirmar senha</label>
-              <input type="password" [(ngModel)]="confirmarSenha" placeholder="Repita a nova senha" class="form-input"
-                     (keydown.enter)="redefinir()">
+              <input type="password" [(ngModel)]="confirmarSenha" placeholder="Repita a nova senha"
+                     maxlength="8" class="form-input" (keydown.enter)="redefinir()">
             </div>
 
             @if (erro()) {
@@ -89,6 +91,7 @@ import { ApiService } from '../../core/services/api.service';
     .auth-form { display: flex; flex-direction: column; gap: 16px; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field label { font-size: 13px; font-weight: 600; color: #1A1A1A; }
+    .field-hint { font-size: 11px; color: #6B6B6B; margin-top: 4px; }
     .form-input { padding: 10px 12px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px; font-family: inherit; }
     .form-input:focus { outline: none; border-color: #0057E1; }
     .msg { padding: 10px 14px; border-radius: 6px; font-size: 13px; line-height: 1.5; }
@@ -129,6 +132,7 @@ export class RedefinirSenhaComponent implements OnInit {
     // Validações locais antes de chamar a API
     if (!this.novaSenha || !this.confirmarSenha) { this.erro.set('Preencha todos os campos.'); return; }
     if (this.novaSenha.length < 6) { this.erro.set('A senha deve ter no mínimo 6 caracteres.'); return; }
+    if (this.novaSenha.length > 8) { this.erro.set('A senha deve ter no máximo 8 caracteres.'); return; }
     if (this.novaSenha !== this.confirmarSenha) { this.erro.set('As senhas não coincidem.'); return; }
 
     this.carregando.set(true);

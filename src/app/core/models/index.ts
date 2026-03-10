@@ -76,6 +76,11 @@ export interface RankingItem {
   acertosMelhorVolta: number; // Para desempate
 }
 
+/** Resultado oficial de uma etapa (público após prazo) */
+export interface ResultadoPublico {
+  posicoes: string[]; // [Pole, Pos1...Pos10, MelhorVolta]
+}
+
 /** Resposta da API ao fazer login com sucesso */
 export interface AuthResponse {
   token: string; // JWT para ser enviado nas próximas requisições
