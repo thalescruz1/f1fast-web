@@ -53,17 +53,17 @@ import { PalpitePublico, ResultadoPublico, Etapa } from '../../core/models';
             <div class="resultado-grid">
               <div class="res-item pole">
                 <span class="res-label">Pole</span>
-                <span class="res-value">{{ resultado()!.posicoes[0] }}</span>
+                <span class="res-value">{{ abreviar(resultado()!.posicoes[0]) }}</span>
               </div>
               @for (i of posIndices; track i) {
                 <div class="res-item">
                   <span class="res-label">{{ i + 1 }}°</span>
-                  <span class="res-value">{{ resultado()!.posicoes[i + 1] }}</span>
+                  <span class="res-value">{{ abreviar(resultado()!.posicoes[i + 1]) }}</span>
                 </div>
               }
               <div class="res-item mv">
                 <span class="res-label">Mel. Volta</span>
-                <span class="res-value">{{ resultado()!.posicoes[11] }}</span>
+                <span class="res-value">{{ abreviar(resultado()!.posicoes[11]) }}</span>
               </div>
             </div>
           </div>
@@ -100,7 +100,7 @@ import { PalpitePublico, ResultadoPublico, Etapa } from '../../core/models';
                     <!-- Para cada posição, calcula e exibe os pontos ganhos -->
                     @for (pos of p.posicoes; track $index) {
                       <td class="piloto-cell" [class]="classeCell($index, p.posicoes)">
-                        <span class="driver-name">{{ pos }}</span>
+                        <span class="driver-name">{{ abreviar(pos) }}</span>
                         @if (resultado()) {
                           @let pts = pontosNaPosicao($index, p.posicoes);
                           @if (pts > 0) {
@@ -192,6 +192,21 @@ export class PalpitesCorridaComponent implements OnInit {
       next: etapas => this.etapa.set(etapas.find(x => x.id === etapaId) ?? null),
       error: () => {}
     });
+  }
+
+  /**
+   * Abrevia o nome do piloto para o formato "NUM — SOB"
+   * onde SOB = 3 primeiras letras do sobrenome em maiúsculas.
+   * Ex: "3 — Max Verstappen" → "3 — VER"
+   *     "44 — Lewis Hamilton" → "44 — HAM"
+   */
+  abreviar(piloto: string): string {
+    if (!piloto || piloto === '?') return piloto;
+    const partes = piloto.split(' — ');
+    if (partes.length < 2) return piloto;
+    const palavras = partes[1].trim().split(' ');
+    const sobrenome = palavras[palavras.length - 1];
+    return `${partes[0]} — ${sobrenome.substring(0, 3).toUpperCase()}`;
   }
 
   /**
