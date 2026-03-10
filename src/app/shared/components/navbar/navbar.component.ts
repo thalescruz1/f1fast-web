@@ -32,7 +32,10 @@ import { AuthService } from '../../../core/services/auth.service';
       <!-- Em desktop: logo fica alinhado normalmente no flex da navbar.
            Em mobile: esta div vira uma "barra" com logo à esquerda e ☰ à direita. -->
       <div class="navbar-top">
-        <a routerLink="/" class="logo" (click)="fecharMenu()">F1<span>FAST</span></a>
+        <a routerLink="/" class="logo" (click)="fecharMenu()">
+          <img src="logo.png" class="logo-img" alt="F1Fast">
+          F1<span>FAST</span>
+        </a>
 
         <!-- Botão hambúrguer — VISÍVEL APENAS em mobile (≤768px).
              "menuAberto()" lê o signal para mostrar ☰ ou ✕.
@@ -103,8 +106,9 @@ import { AuthService } from '../../../core/services/auth.service';
        do flex da .navbar — como se a div não existisse. */
     .navbar-top { display: contents; }
 
-    .logo { font-family: 'Orbitron', monospace; font-size: 18px; color: white; letter-spacing: 2px; text-decoration: none; }
+    .logo { font-family: 'Orbitron', monospace; font-size: 18px; color: white; letter-spacing: 2px; text-decoration: none; display: flex; align-items: center; gap: 10px; }
     .logo span { color: #0057E1; }
+    .logo-img { height: 30px; width: auto; display: block; }
 
     /* Hambúrguer invisível em desktop */
     .hamburger { display: none; }
