@@ -76,6 +76,16 @@ export interface RankingItem {
   acertosMelhorVolta: number; // Para desempate
 }
 
+/** Pontuação de um participante em uma corrida — histórico por etapa */
+export interface HistoricoEtapa {
+  etapaNumero:        number;
+  etapaNome:          string;
+  pontos:             number;
+  acertosExatos:      number;
+  acertouPole:        boolean;
+  acertouMelhorVolta: boolean;
+}
+
 /** Resultado oficial de uma etapa (público após prazo) */
 export interface ResultadoPublico {
   posicoes: string[]; // [Pole, Pos1...Pos10, MelhorVolta]

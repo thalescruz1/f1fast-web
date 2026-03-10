@@ -147,8 +147,8 @@ import { PalpitePublico, ResultadoPublico, Etapa } from '../../core/models';
     /* Resultado oficial */
     .resultado-card { margin-bottom: 8px; padding: 16px 20px; }
     .resultado-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #6B6B6B; margin-bottom: 12px; }
-    .resultado-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-    .res-item { display: flex; flex-direction: column; align-items: center; background: #F5F5F5; border-radius: 6px; padding: 8px 10px; min-width: 90px; }
+    .resultado-grid { display: flex; flex-wrap: nowrap; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+    .res-item { display: flex; flex-direction: column; align-items: center; background: #F5F5F5; border-radius: 6px; padding: 8px 10px; min-width: 90px; flex-shrink: 0; }
     .res-item.pole { border-top: 2px solid #E5A800; }
     .res-item.mv   { border-top: 2px solid #16A34A; }
     .res-label { font-size: 10px; font-weight: 700; color: #6B6B6B; text-transform: uppercase; margin-bottom: 4px; }

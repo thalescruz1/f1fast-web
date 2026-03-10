@@ -19,7 +19,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import {
   Piloto, Etapa, PalpiteRequest, PalpitePublico,
-  RankingItem, ResultadoRequest, ResultadoPublico
+  RankingItem, ResultadoRequest, ResultadoPublico, HistoricoEtapa
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -81,6 +81,11 @@ export class ApiService {
   /** GET /api/ranking → classificação geral de todos os participantes */
   getRanking() {
     return this.http.get<RankingItem[]>(`${this.base}/ranking`);
+  }
+
+  /** GET /api/ranking/{login}/historico → pontuação por corrida de um participante */
+  getHistoricoParticipante(login: string) {
+    return this.http.get<HistoricoEtapa[]>(`${this.base}/ranking/${login}/historico`);
   }
 
   /** GET /api/ranking/ultimo-gp → nome do último GP com resultado cadastrado */
