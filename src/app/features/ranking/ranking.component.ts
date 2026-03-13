@@ -120,14 +120,16 @@ import { RankingItem, HistoricoEtapa } from '../../core/models';
   styles: [`
     /* Tabela */
     .rank-table { width: 100%; border-collapse: collapse; }
-    .rank-table th { font-size: 11px; font-weight: 600; color: #6B6B6B; text-transform: uppercase; letter-spacing: 1px; padding: 12px 16px; text-align: left; border-bottom: 1px solid #E0E0E0; }
+    .rank-table th { font-size: 11px; font-weight: 600; color: #6B6B6B; text-transform: uppercase; letter-spacing: 1px; padding: 12px 16px; text-align: left; border-bottom: 2px solid #E10600; background: #FAFAFA; }
     .rank-table td { padding: 12px 16px; border-bottom: 1px solid #E0E0E0; font-size: 14px; }
     .rank-table tr:last-child td { border-bottom: none; }
     .row-click { cursor: pointer; transition: background 0.1s; }
     .row-click:hover { background: #F5F7FF; }
     .row-active { background: #EEF3FF !important; }
-    .pos { font-weight: 700; color: #6B6B6B; }
-    .pos.p1 { color: #E5A800; } .pos.p2 { color: #9E9E9E; } .pos.p3 { color: #A0522D; }
+    .pos { display: inline-flex; align-items: center; justify-content: center; font-weight: 700; color: #6B6B6B; font-size: 13px; width: 32px; height: 32px; border-radius: 50%; }
+    .pos.p1 { background: linear-gradient(135deg, #FFD700, #E5A800); color: #1A1A1A; font-size: 14px; box-shadow: 0 2px 8px rgba(229,168,0,0.3); }
+    .pos.p2 { background: linear-gradient(135deg, #E0E0E0, #B0B0B0); color: #1A1A1A; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .pos.p3 { background: linear-gradient(135deg, #CD7F32, #A0522D); color: white; font-size: 14px; box-shadow: 0 2px 6px rgba(160,82,45,0.3); }
     .name { font-weight: 600; }
     .hint { font-size: 11px; color: #BDBDBD; }
     .muted { font-size: 13px; color: #6B6B6B; }
@@ -141,13 +143,14 @@ import { RankingItem, HistoricoEtapa } from '../../core/models';
     .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.25); z-index: 100; }
 
     /* Drawer deslizante */
-    .drawer { position: fixed; top: 0; right: 0; height: 100vh; width: 360px; max-width: 90vw; background: white; box-shadow: -4px 0 24px rgba(0,0,0,0.12); z-index: 101; display: flex; flex-direction: column; animation: slideIn 0.2s ease; }
+    .drawer { position: fixed; top: 0; right: 0; height: 100vh; width: 360px; max-width: 90vw; background: white; box-shadow: -4px 0 24px rgba(0,0,0,0.12); z-index: 101; display: flex; flex-direction: column; animation: slideIn 0.2s ease; border-left: 3px solid #E10600; }
     @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-    .drawer-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 20px; border-bottom: 1px solid #E0E0E0; }
-    .drawer-title { font-size: 18px; font-weight: 700; }
-    .drawer-sub { font-size: 13px; color: #6B6B6B; margin-top: 2px; }
-    .btn-close { background: none; border: none; font-size: 18px; color: #6B6B6B; cursor: pointer; padding: 4px 8px; border-radius: 4px; line-height: 1; }
-    .btn-close:hover { background: #F5F5F5; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .drawer-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 20px; border-bottom: none; background: #1A1A1A; }
+    .drawer-title { font-size: 18px; font-weight: 700; color: white; }
+    .drawer-sub { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+    .btn-close { background: none; border: none; font-size: 18px; color: rgba(255,255,255,0.6); cursor: pointer; padding: 4px 8px; border-radius: 4px; line-height: 1; }
+    .btn-close:hover { background: rgba(255,255,255,0.1); color: white; }
     .drawer-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
 
     /* Itens do histórico */
@@ -158,7 +161,7 @@ import { RankingItem, HistoricoEtapa } from '../../core/models';
     .hist-pts { font-size: 15px; font-weight: 700; color: #0057E1; white-space: nowrap; }
     .hist-bar-bg { height: 8px; background: #F0F0F0; border-radius: 4px; overflow: hidden; }
     .hist-bar { height: 100%; border-radius: 4px; min-width: 4px; transition: width 0.4s ease; }
-    .hist-bar.bar-full { background: #E5A800; }
+    .hist-bar.bar-full { background: linear-gradient(90deg, #E5A800, #FFD700, #E5A800); background-size: 200% 100%; animation: shimmer 3s infinite; }
     .hist-bar.bar-good { background: #16A34A; }
     .hist-bar.bar-mid  { background: #0057E1; }
     .hist-bar.bar-low  { background: #9E9E9E; }

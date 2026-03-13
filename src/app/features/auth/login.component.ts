@@ -77,17 +77,25 @@ import { AuthService } from '../../core/services/auth.service';
     </div>
   `,
   styles: [`
-    .auth-page { min-height: calc(100vh - 56px); display: flex; align-items: center; justify-content: center; background: #F5F5F5; padding: 24px; }
-    .auth-card { width: 100%; max-width: 400px; padding: 32px; }
+    .auth-page {
+      min-height: calc(100vh - 56px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      /* Speed lines diagonais sutis */
+      background:
+        repeating-linear-gradient(-45deg, transparent, transparent 40px, rgba(225,6,0,0.02) 40px, rgba(225,6,0,0.02) 42px),
+        #F5F5F5;
+    }
+    .auth-card { width: 100%; max-width: 400px; padding: 32px; border-top: 3px solid #E10600 !important; }
     .auth-logo { font-family: 'Orbitron', monospace; font-size: 20px; font-weight: 700; letter-spacing: 2px; margin-bottom: 8px; }
-    .auth-logo span { color: #0057E1; }
+    .auth-logo span { color: #E10600; }
     .auth-header h2 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
     .auth-header p { font-size: 13px; color: #6B6B6B; margin-bottom: 24px; }
     .auth-form { display: flex; flex-direction: column; gap: 16px; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field label { font-size: 13px; font-weight: 600; color: #1A1A1A; }
     .form-input { padding: 10px 12px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px; font-family: inherit; }
-    .form-input:focus { outline: none; border-color: #0057E1; }
+    .form-input:focus { outline: none; border-color: #E10600; box-shadow: 0 0 0 2px rgba(225,6,0,0.1); }
     .msg.error { padding: 10px 14px; border-radius: 6px; font-size: 13px; background: #fee2e2; color: #991b1b; }
     .btn { padding: 11px 22px; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; }
     .btn-red { background: #0057E1; color: white; }

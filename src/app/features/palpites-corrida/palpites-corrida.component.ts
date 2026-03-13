@@ -125,7 +125,9 @@ import { PalpitePublico, ResultadoPublico, Etapa } from '../../core/models';
   `,
   styles: [`
     .palpites-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    .palpites-table th { font-size: 10px; font-weight: 600; color: #6B6B6B; text-transform: uppercase; letter-spacing: 1px; padding: 10px 8px; text-align: left; border-bottom: 1px solid #E0E0E0; white-space: nowrap; background: white; }
+    /* Timing board header — estilo F1 escuro */
+    .palpites-table th { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px; padding: 10px 8px; text-align: left; border-bottom: 2px solid #E10600; white-space: nowrap; background: #1A1A1A; }
+    .palpites-table th.col-fixed { background: #1A1A1A; color: rgba(255,255,255,0.9); }
     .palpites-table td { padding: 8px; border-bottom: 1px solid #E0E0E0; vertical-align: middle; }
     .palpites-table tbody tr:hover { background: #FAFAFA; }
     /* Coluna fixa */
@@ -150,15 +152,15 @@ import { PalpitePublico, ResultadoPublico, Etapa } from '../../core/models';
     .enviado-em { font-size: 11px; color: #6B6B6B; white-space: nowrap; }
     .loading, .empty { text-align: center; padding: 40px; color: #6B6B6B; }
     .table-wrapper { width: 100%; overflow-x: auto; }
-    /* Resultado oficial */
-    .resultado-card { margin-bottom: 8px; padding: 16px 20px; }
-    .resultado-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #6B6B6B; margin-bottom: 12px; }
+    /* Resultado oficial — estilo F1 escuro */
+    .resultado-card { margin-bottom: 8px; padding: 16px 20px; background: #1A1A1A !important; border-top: 3px solid #E10600 !important; }
+    .resultado-title { font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: white; margin-bottom: 12px; }
     .resultado-grid { display: flex; flex-wrap: nowrap; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
-    .res-item { display: flex; flex-direction: column; align-items: center; background: #F5F5F5; border-radius: 6px; padding: 8px 10px; min-width: 90px; flex-shrink: 0; }
+    .res-item { display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.05); border-radius: 6px; padding: 8px 10px; min-width: 90px; flex-shrink: 0; }
     .res-item.pole { border-top: 2px solid #E5A800; }
     .res-item.mv   { border-top: 2px solid #16A34A; }
-    .res-label { font-size: 10px; font-weight: 700; color: #6B6B6B; text-transform: uppercase; margin-bottom: 4px; }
-    .res-value { font-size: 12px; font-weight: 600; text-align: center; }
+    .res-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 4px; }
+    .res-value { font-size: 12px; font-weight: 600; text-align: center; color: white; }
     /* Legenda */
     .legenda { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
     .leg-item { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 10px; }

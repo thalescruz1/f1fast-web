@@ -99,6 +99,8 @@ import { AuthService } from '../../../core/services/auth.service';
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 32px; height: 56px;
       position: sticky; top: 0; z-index: 100;
+      border-bottom: 3px solid #E10600;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
 
     /* "display: contents" faz a div desaparecer do layout:
@@ -114,8 +116,9 @@ import { AuthService } from '../../../core/services/auth.service';
     .hamburger { display: none; }
 
     .nav-links { display: flex; gap: 2px; }
-    .nav-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 14px; border-radius: 4px; transition: color 0.15s; }
+    .nav-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 14px; border-radius: 4px; transition: color 0.15s; position: relative; }
     .nav-links a:hover, .nav-links a.active { color: white; }
+    .nav-links a.active::after { content: ''; position: absolute; bottom: -18px; left: 8px; right: 8px; height: 3px; background: #E10600; border-radius: 2px 2px 0 0; }
     .admin-link { color: #0057E1 !important; }
 
     .nav-auth { display: flex; gap: 8px; align-items: center; }

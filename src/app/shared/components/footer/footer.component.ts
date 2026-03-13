@@ -26,6 +26,7 @@ import { RouterLink } from '@angular/router';
   // RouterLink = necessário para o link interno /regulamento
   imports: [RouterLink],
   template: `
+    <div class="checkered-top"></div>
     <footer>
       <div class="footer-inner">
         <div>
@@ -43,7 +44,8 @@ import { RouterLink } from '@angular/router';
     </footer>
   `,
   styles: [`
-    footer { background: #1A1A1A; padding: 32px; margin-top: 48px; }
+    .checkered-top { height: 8px; background: repeating-conic-gradient(#1A1A1A 0% 25%, #333 0% 50%) 0 0 / 8px 8px; margin-top: 48px; }
+    footer { background: #1A1A1A; padding: 32px; margin-top: 0; }
     .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
     .footer-logo { font-family: 'Orbitron', monospace; font-size: 16px; color: white; letter-spacing: 2px; }
     .footer-logo span { color: #0057E1; }

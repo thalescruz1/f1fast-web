@@ -24,7 +24,7 @@ import { Etapa } from '../../core/models';
     <div class="hero-strip">
       <div>
         <div class="eyebrow">Temporada 2026</div>
-        <div class="hero-title">CV2026</div>
+        <div class="hero-title">CV<span class="title-accent">2026</span></div>
         <div class="hero-sub">Campeonato Virtual F1Fast · 30 etapas · Até 35 pontos por corrida</div>
         <div class="hero-actions">
           <!-- routerLink = navegação interna sem recarregar a página (SPA) -->
@@ -72,20 +72,30 @@ import { Etapa } from '../../core/models';
   `,
   styles: [`
     .hero-strip {
-      background: #1A1A1A; border-bottom: 3px solid #0057E1;
+      background:
+        repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255,255,255,0.015) 10px, rgba(255,255,255,0.015) 20px),
+        linear-gradient(135deg, #111 0%, #1A1A1A 50%, #222 100%);
+      border-bottom: 3px solid #E10600;
       padding: 48px 32px; display: flex; justify-content: space-between;
       align-items: center; gap: 32px; flex-wrap: wrap;
+      position: relative; overflow: hidden;
     }
-    .eyebrow { font-size: 12px; color: #0057E1; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+    /* Glow vermelho sutil no fundo */
+    .hero-strip::before { content: ''; position: absolute; top: -50%; right: -10%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(225,6,0,0.08) 0%, transparent 70%); pointer-events: none; }
+    .eyebrow { font-size: 12px; color: #E10600; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
     .hero-title { font-family: 'Orbitron', monospace; font-size: 48px; color: white; letter-spacing: 2px; line-height: 1; }
+    .title-accent { color: #E10600; }
     .hero-sub { font-size: 14px; color: rgba(255,255,255,0.5); margin-top: 10px; }
     .hero-actions { display: flex; gap: 12px; margin-top: 24px; }
     .btn { padding: 10px 22px; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: inline-block; }
     .btn-red { background: #0057E1; color: white; }
     .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; }
 
-    .race-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 20px; min-width: 260px; }
-    .race-label { font-size: 11px; color: #0057E1; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+    .race-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 20px; min-width: 260px; border-top: 3px solid #E10600; }
+    .race-label { font-size: 11px; color: #E10600; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+    /* Pulsing dot no label (como "LIVE" em transmissões F1) */
+    .race-label::before { content: ''; display: inline-block; width: 6px; height: 6px; background: #E10600; border-radius: 50%; margin-right: 6px; vertical-align: middle; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
     .race-flag { font-size: 36px; margin-bottom: 8px; }
     .race-name { font-size: 18px; font-weight: 700; color: white; }
     .race-circuit { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 16px; }
@@ -94,12 +104,15 @@ import { Etapa } from '../../core/models';
     .race-info-divider { width: 1px; background: rgba(255,255,255,0.1); }
     .info-label { display: block; font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
     .info-val { font-size: 13px; font-weight: 600; color: white; }
-    .info-val.deadline { color: #0057E1; }
+    .info-val.deadline { color: #E10600; }
 
-    .stats-bar { background: #F5F5F5; border-bottom: 1px solid #E0E0E0; display: flex; justify-content: center; gap: 64px; padding: 24px 32px; flex-wrap: wrap; }
-    .stat { text-align: center; }
+    /* Stats bar — painel de telemetria F1 */
+    .stats-bar { background: white; border-bottom: 1px solid #E0E0E0; display: flex; justify-content: center; gap: 0; padding: 0; flex-wrap: wrap; }
+    .stat { text-align: center; flex: 1; padding: 24px 16px; border-right: 1px solid #E0E0E0; position: relative; }
+    .stat:last-child { border-right: none; }
+    .stat::before { content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 2px; background: #E10600; border-radius: 0 0 2px 2px; }
     .stat-num { font-family: 'Orbitron', monospace; font-size: 28px; font-weight: 700; color: #1A1A1A; }
-    .stat-label { font-size: 12px; color: #6B6B6B; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+    .stat-label { font-size: 11px; color: #6B6B6B; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
   `]
 })
 export class HomeComponent implements OnInit {

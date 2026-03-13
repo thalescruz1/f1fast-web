@@ -1,10 +1,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700&display=swap');
 
+/* ── Variáveis F1 ── */
+:root {
+  --f1-primary: #0057E1;
+  --f1-dark: #1A1A1A;
+  --f1-red: #E10600;
+  --f1-gold: #E5A800;
+  --f1-green: #16A34A;
+  --f1-silver: #9E9E9E;
+  --f1-bronze: #A0522D;
+  --f1-carbon: #F3F3F3;
+  --f1-carbon-line: #EBEBEB;
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
   font-family: 'Inter', sans-serif;
-  background: #F5F5F5;
+  /* Micro-textura carbon fiber */
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 2px, var(--f1-carbon-line) 2px, var(--f1-carbon-line) 3px),
+    repeating-linear-gradient(90deg, transparent, transparent 2px, var(--f1-carbon-line) 2px, var(--f1-carbon-line) 3px),
+    var(--f1-carbon);
+  background-size: 8px 8px, 8px 8px, auto;
   color: #1A1A1A;
   -webkit-font-smoothing: antialiased;
 }
@@ -30,12 +48,14 @@ body {
   margin-top: 4px;
 }
 
-/* Card genérico */
+/* Card genérico — faixa vermelha F1 no topo */
 .card {
   background: white;
   border: 1px solid #E0E0E0;
   border-radius: 8px;
   overflow: hidden;
+  border-top: 3px solid var(--f1-red);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 
 /* Botões */
@@ -49,9 +69,30 @@ body {
   text-decoration: none;
   display: inline-block;
   font-family: 'Inter', sans-serif;
-  transition: opacity 0.15s;
+  transition: opacity 0.15s, transform 0.15s;
 }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-red     { background: #0057E1; color: white; }
+.btn-red {
+  background: #0057E1;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+/* Speed-line shimmer no hover */
+.btn-red::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  transition: left 0.4s ease;
+}
+.btn-red:hover::after { left: 100%; }
+.btn-red:hover { transform: translateY(-1px); }
 .btn-ghost   { background: transparent; border: 1px solid #E0E0E0; color: #6B6B6B; }
 .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; }
+
+/* Utilitário: faixa quadriculada (linha de chegada) */
+.checkered-stripe {
+  height: 8px;
+  background: repeating-conic-gradient(#1A1A1A 0% 25%, white 0% 50%) 0 0 / 8px 8px;
+}

@@ -167,27 +167,30 @@ interface PalpiteConfirmado {
   `,
   styles: [`
     .bolao-layout { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
-    .bolao-header { padding: 16px 20px; border-bottom: 1px solid #E0E0E0; display: flex; justify-content: space-between; align-items: flex-start; }
-    .bolao-header h3 { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
-    .circuit-name { font-size: 12px; color: #6B6B6B; margin-top: 2px; }
-    .deadline-tag { font-size: 12px; color: #0057E1; font-weight: 600; background: rgba(0,87,225,0.07); padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+    /* Header escuro F1 */
+    .bolao-header { padding: 16px 20px; border-bottom: none; display: flex; justify-content: space-between; align-items: flex-start; background: #1A1A1A; border-radius: 8px 8px 0 0; }
+    .bolao-header h3 { font-size: 15px; font-weight: 700; margin-bottom: 2px; color: white; }
+    .circuit-name { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+    .deadline-tag { font-size: 12px; color: white; font-weight: 600; background: rgba(225,6,0,0.8); padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
     .bolao-form { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
     .form-row { display: grid; grid-template-columns: 80px 1fr; gap: 12px; align-items: center; }
-    .form-label { font-size: 12px; font-weight: 600; color: #6B6B6B; text-align: right; }
-    .form-label.pole { color: #E5A800; } .form-label.mv { color: #16A34A; }
+    .form-label { font-size: 12px; font-weight: 700; color: white; text-align: center; background: #6B6B6B; padding: 4px 8px; border-radius: 4px; }
+    .form-label.pole { background: linear-gradient(135deg, #E5A800, #FFD700); color: #1A1A1A; } .form-label.mv { background: linear-gradient(135deg, #16A34A, #22C55E); color: white; }
     .form-select { width: 100%; padding: 9px 12px; background: white; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 13px; }
-    .form-select:focus { outline: none; border-color: #0057E1; }
+    .form-select:focus { outline: none; border-color: #E10600; box-shadow: 0 0 0 2px rgba(225,6,0,0.1); }
     .divider { height: 1px; background: #E0E0E0; margin: 4px 0; }
     .form-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #E0E0E0; }
     .form-info { font-size: 12px; color: #6B6B6B; }
     .msg { margin-top: 8px; padding: 10px 14px; border-radius: 6px; font-size: 13px; background: #dcfce7; color: #166534; }
     .msg.error { background: #fee2e2; color: #991b1b; }
-    .drivers-header { padding: 14px 16px; border-bottom: 1px solid #E0E0E0; }
-    .drivers-header h4 { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
-    .search-input { width: 100%; padding: 7px 10px; border: 1px solid #E0E0E0; border-radius: 5px; font-size: 13px; }
+    /* Sidebar pilotos — escura */
+    .drivers-header { padding: 14px 16px; border-bottom: none; background: #1A1A1A; border-radius: 8px 8px 0 0; }
+    .drivers-header h4 { font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; margin-bottom: 8px; color: white; letter-spacing: 1px; text-transform: uppercase; }
+    .search-input { width: 100%; padding: 7px 10px; border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; font-size: 13px; background: rgba(255,255,255,0.08); color: white; }
+    .search-input::placeholder { color: rgba(255,255,255,0.35); }
     .drivers-list { max-height: 560px; overflow-y: auto; }
     .driver-row { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid #E0E0E0; font-size: 13px; }
-    .driver-num { font-weight: 700; color: #6B6B6B; min-width: 28px; }
+    .driver-num { font-family: 'Orbitron', monospace; font-weight: 700; color: #E10600; min-width: 28px; font-size: 12px; }
     .team-bar { width: 3px; height: 20px; border-radius: 2px; flex-shrink: 0; }
     .driver-name { font-weight: 500; }
     .driver-team { font-size: 11px; color: #6B6B6B; }
@@ -195,9 +198,9 @@ interface PalpiteConfirmado {
     @media (max-width: 768px) { .bolao-layout { grid-template-columns: 1fr; } }
     /* Tela de confirmação */
     .confirmacao-card { max-width: 540px; }
-    .conf-header { padding: 16px 20px; border-bottom: 1px solid #E0E0E0; }
-    .conf-title { font-size: 16px; font-weight: 700; }
-    .conf-sub { font-size: 12px; color: #6B6B6B; margin-top: 2px; }
+    .conf-header { padding: 16px 20px; border-bottom: none; background: #1A1A1A; border-radius: 8px 8px 0 0; }
+    .conf-title { font-size: 16px; font-weight: 700; color: white; }
+    .conf-sub { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
     .conf-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 8px; }
     .conf-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #F5F5F5; border-radius: 6px; }
     .conf-item.pole { border-left: 3px solid #E5A800; }

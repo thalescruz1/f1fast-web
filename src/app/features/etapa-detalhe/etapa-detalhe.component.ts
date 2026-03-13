@@ -224,7 +224,7 @@ const CIRCUITOS: Record<string, CircuitoInfo> = {
   styles: [`
     .detalhe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
     .detalhe-card { padding: 20px; }
-    .card-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #6B6B6B; margin-bottom: 14px; }
+    .card-title { font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #E10600; margin-bottom: 14px; border-left: 3px solid #E10600; padding-left: 10px; }
     .info-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px solid #F0F0F0; font-size: 13px; }
     .info-row:last-child { border-bottom: none; }
     .info-label { color: #6B6B6B; }
@@ -232,7 +232,7 @@ const CIRCUITOS: Record<string, CircuitoInfo> = {
     .flag-big { font-size: 36px; text-align: center; margin-top: 16px; }
     .sprint-badge { margin-top: 12px; display: inline-block; background: rgba(229,168,0,0.12); color: #996F00; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; }
     .record-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-    .record-time { font-size: 28px; font-weight: 700; color: #0057E1; font-variant-numeric: tabular-nums; }
+    .record-time { font-family: 'Orbitron', monospace; font-size: 28px; font-weight: 700; color: #E10600; font-variant-numeric: tabular-nums; text-decoration: underline; text-decoration-color: rgba(225,6,0,0.2); text-underline-offset: 6px; }
     .record-year { font-size: 12px; color: #6B6B6B; margin-top: 4px; }
     .back-link { margin-top: 24px; }
     .btn-back { font-size: 13px; color: #0057E1; text-decoration: none; font-weight: 600; }

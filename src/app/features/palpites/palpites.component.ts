@@ -88,7 +88,7 @@ import { Etapa } from '../../core/models';
       font-size: 13px;
       color: #6B6B6B;
     }
-    .summary-count strong { color: #0057E1; }
+    .summary-count strong { color: #E10600; }
 
     /* Grid responsivo: colunas de no mínimo 200px */
     .grid {
@@ -105,7 +105,9 @@ import { Etapa } from '../../core/models';
       display: flex;
       flex-direction: column;
       gap: 4px;
-      transition: all 0.15s;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
     }
 
     /* Card disponível — fundo branco, clicável */
@@ -114,12 +116,12 @@ import { Etapa } from '../../core/models';
       text-decoration: none;
       color: inherit;
       cursor: pointer;
-      border-left: 3px solid #0057E1;
+      border-left: 3px solid #E10600;
     }
     .card-aberta:hover {
-      border-color: #0057E1;
-      box-shadow: 0 3px 12px rgba(0, 87, 225, 0.1);
-      transform: translateY(-1px);
+      border-color: #E10600;
+      box-shadow: 0 4px 16px rgba(225, 6, 0, 0.12);
+      transform: translateY(-2px);
     }
 
     /* Card bloqueado — acinzentado, não clicável */
@@ -127,6 +129,16 @@ import { Etapa } from '../../core/models';
       background: #FAFAFA;
       opacity: 0.6;
       cursor: default;
+    }
+    /* Checkered pattern no rodapé do card bloqueado */
+    .card-bloq::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: repeating-conic-gradient(#E0E0E0 0% 25%, transparent 0% 50%) 0 0 / 4px 4px;
     }
 
     .card-top {
@@ -139,7 +151,7 @@ import { Etapa } from '../../core/models';
 
     /* Badges */
     .badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
-    .badge-enc  { background: rgba(0,87,225,0.1);   color: #0057E1; }
+    .badge-enc  { background: rgba(225,6,0,0.1); color: #E10600; }
     .badge-exp  { background: rgba(22,163,74,0.1); color: #166534; }
     .badge-lock { background: rgba(0,0,0,0.05);    color: #9E9E9E; }
 
