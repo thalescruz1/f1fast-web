@@ -86,18 +86,21 @@ import { PalpitePublico, ResultadoPublico, Etapa } from '../../core/models';
               <thead>
                 <tr>
                   <th class="col-fixed">Participante</th>
+                    <th>Enviado em</th>
                   <th>Pole</th>
                   <th>1°</th><th>2°</th><th>3°</th><th>4°</th><th>5°</th>
                   <th>6°</th><th>7°</th><th>8°</th><th>9°</th><th>10°</th>
                   <th>MV</th>
                   <th>Pontos</th>
-                  <th>Enviado em</th>
+                
                 </tr>
               </thead>
               <tbody>
                 @for (p of palpites(); track p.login) {
                   <tr>
                     <td class="col-fixed login-cell">{{ p.login }}</td>
+
+                    <td class="enviado-em">{{ p.enviadoEm | date:'dd/MM HH:mm' }}</td>
                     <!-- Para cada posição, calcula e exibe os pontos ganhos -->
                     @for (pos of p.posicoes; track $index) {
                       <td class="piloto-cell" [class]="classeCell($index, p.posicoes)">
@@ -111,7 +114,6 @@ import { PalpitePublico, ResultadoPublico, Etapa } from '../../core/models';
                       </td>
                     }
                     <td class="pts-total">{{ p.pontosObtidos ?? '—' }}</td>
-                    <td class="enviado-em">{{ p.enviadoEm | date:'dd/MM HH:mm' }}</td>
                   </tr>
                 }
               </tbody>
