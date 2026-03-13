@@ -60,6 +60,7 @@ export interface PalpitePublico {
   nome:          string;        // Nome do participante
   posicoes:      string[];      // Nomes: [Pole, Pos1...Pos10, MelhorVolta]
   pontosObtidos: number | null; // null se a etapa ainda não encerrou
+  enviadoEm:     string;        // Data/hora ISO do envio (ou última atualização)
 }
 
 /** Um item da tabela de ranking geral */

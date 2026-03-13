@@ -14,7 +14,7 @@
 // ============================================================
 
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { PalpitePublico, ResultadoPublico, Etapa } from '../../core/models';
@@ -22,7 +22,7 @@ import { PalpitePublico, ResultadoPublico, Etapa } from '../../core/models';
 @Component({
   selector: 'app-palpites-corrida',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DatePipe],
   template: `
     <div class="page">
       <div class="section-head">
@@ -91,6 +91,7 @@ import { PalpitePublico, ResultadoPublico, Etapa } from '../../core/models';
                   <th>6°</th><th>7°</th><th>8°</th><th>9°</th><th>10°</th>
                   <th>MV</th>
                   <th>Pontos</th>
+                  <th>Enviado em</th>
                 </tr>
               </thead>
               <tbody>
@@ -110,6 +111,7 @@ import { PalpitePublico, ResultadoPublico, Etapa } from '../../core/models';
                       </td>
                     }
                     <td class="pts-total">{{ p.pontosObtidos ?? '—' }}</td>
+                    <td class="enviado-em">{{ p.enviadoEm | date:'dd/MM HH:mm' }}</td>
                   </tr>
                 }
               </tbody>
@@ -142,6 +144,8 @@ import { PalpitePublico, ResultadoPublico, Etapa } from '../../core/models';
     .badge-1 { background: rgba(229,168,0,0.15); color: #996F00; }
     /* Total de pontos */
     .pts-total { font-weight: 700; color: #0057E1; }
+    /* Data do palpite */
+    .enviado-em { font-size: 11px; color: #6B6B6B; white-space: nowrap; }
     .loading, .empty { text-align: center; padding: 40px; color: #6B6B6B; }
     .table-wrapper { width: 100%; overflow-x: auto; }
     /* Resultado oficial */
