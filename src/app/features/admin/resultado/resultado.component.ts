@@ -124,7 +124,7 @@ export class ResultadoComponent implements OnInit {
   form: Record<string, number> = {
     poleId: 0, pos1Id: 0, pos2Id: 0, pos3Id: 0, pos4Id: 0,
     pos5Id: 0, pos6Id: 0, pos7Id: 0, pos8Id: 0, pos9Id: 0,
-    pos10Id: 0, melhorVoltaId: 0
+    pos10Id: 0, pos11Id: 0, melhorVoltaId: 0
   };
 
   posicoes = [
@@ -132,7 +132,8 @@ export class ResultadoComponent implements OnInit {
     { key: 'pos3Id',  label: '3° lugar'  }, { key: 'pos4Id',  label: '4° lugar'  },
     { key: 'pos5Id',  label: '5° lugar'  }, { key: 'pos6Id',  label: '6° lugar'  },
     { key: 'pos7Id',  label: '7° lugar'  }, { key: 'pos8Id',  label: '8° lugar'  },
-    { key: 'pos9Id',  label: '9° lugar'  }, { key: 'pos10Id', label: '10° lugar' }
+    { key: 'pos9Id',  label: '9° lugar'  }, { key: 'pos10Id', label: '10° lugar' },
+    { key: 'pos11Id', label: '11° lugar' }
   ];
 
   ngOnInit() {
@@ -167,6 +168,7 @@ export class ResultadoComponent implements OnInit {
       pos5Id: this.form['pos5Id'], pos6Id: this.form['pos6Id'],
       pos7Id: this.form['pos7Id'], pos8Id: this.form['pos8Id'],
       pos9Id: this.form['pos9Id'], pos10Id: this.form['pos10Id'],
+      pos11Id: this.form['pos11Id'],
       melhorVoltaId: this.form['melhorVoltaId']
     };
 

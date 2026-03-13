@@ -90,6 +90,7 @@ export interface HistoricoEtapa {
 /** Resultado oficial de uma etapa (público após prazo) */
 export interface ResultadoPublico {
   posicoes: string[]; // [Pole, Pos1...Pos10, MelhorVolta]
+  pos11:    string;   // 11° lugar — necessário para pontuar palpite de 10° com ±1
 }
 
 /** Resposta da API ao fazer login com sucesso */
@@ -114,5 +115,6 @@ export interface ResultadoRequest {
   pos8Id:        number;
   pos9Id:        number;
   pos10Id:       number; // 10° lugar real
+  pos11Id:       number; // 11° lugar real (necessário para ±1 na pontuação do 10°)
   melhorVoltaId: number; // Quem fez a melhor volta real
 }

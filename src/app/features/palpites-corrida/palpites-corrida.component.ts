@@ -239,10 +239,13 @@ export class PalpitesCorridaComponent implements OnInit {
     // Posições 1–10: índices 1 a 10 no array
     if (driver === resDriver) return 3; // acerto exato
 
+    // Caso especial: chutou 10° (posIndex=10) e o piloto chegou 11° → erro de 1 posição → +2
+    if (posIndex === 10 && driver === res.pos11) return 2;
+
     // Verifica se o piloto está em alguma posição do top-10 real (índices 1–10)
     const resPosicoes = res.posicoes.slice(1, 11); // posições reais [1..10]
     const realIdx     = resPosicoes.indexOf(driver);   // posição real do piloto (-1 se não está)
-    if (realIdx === -1) return 0; // piloto não está no top-10 real
+    if (realIdx === -1) return 0; // piloto não está no top-10 real nem no 11°
 
     // Diferença entre o índice real do piloto e o índice do palpite
     // Ambos usam base 0 dentro do slice de posições (0 = 1°, 9 = 10°)
