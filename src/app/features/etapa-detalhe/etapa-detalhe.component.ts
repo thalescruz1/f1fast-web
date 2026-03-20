@@ -182,11 +182,11 @@ import { Etapa } from '../../core/models';
 
     /* Circuit */
     .circuit-svg {
-      width: 100%; height: 140px; margin-bottom: 20px;
+      width: 100%; margin-bottom: 20px;
       display: flex; align-items: center; justify-content: center;
       opacity: .3;
     }
-    .circuit-svg :deep(svg) { width: 100%; height: 100%; }
+    .circuit-svg ::ng-deep svg { width: 100%; height: auto; display: block; max-height: 200px; }
     .circuit-data { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .cd-item { display: flex; flex-direction: column; gap: 4px; }
     .cd-label { font-size: var(--sz-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--w45); }
@@ -233,7 +233,14 @@ export class EtapaDetalheComponent implements OnInit {
         const e = etapas.find(x => x.id === etapaId) ?? null;
         this.etapa.set(e);
         if (e?.circuitoSvg) {
-          this.circuitoSvg.set(this.sanitizer.bypassSecurityTrustHtml(e.circuitoSvg));
+          let svg = e.circuitoSvg;
+          // Add viewBox if missing so the SVG scales properly
+          if (svg.includes('width="500"') && !svg.includes('viewBox')) {
+            svg = svg.replace('<svg ', '<svg viewBox="0 0 500 500" ');
+          }
+          // Remove fixed width/height so it fills the container
+          svg = svg.replace(/\s*width="\d+"/, '').replace(/\s*height="\d+"/, '');
+          this.circuitoSvg.set(this.sanitizer.bypassSecurityTrustHtml(svg));
         }
         this.loading.set(false);
       },

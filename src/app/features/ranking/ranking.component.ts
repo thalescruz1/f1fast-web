@@ -250,6 +250,7 @@ import { RankingItem, HistoricoEtapa } from '../../core/models';
     @media (max-width: 768px) {
       .ranking-wrap { padding: 24px 16px; }
       .podium { grid-template-columns: 1fr; }
+      .pod-card.g1 { order: -1; }
       .rank-table th:nth-child(4), .rank-table td:nth-child(4) { display: none; }
     }
   `]
