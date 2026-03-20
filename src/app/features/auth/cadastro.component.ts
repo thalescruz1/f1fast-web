@@ -193,7 +193,7 @@ export class CadastroComponent {
         this.setMsg('Conta criada! Redirecionando...', false);
         setTimeout(() => this.router.navigate(['/entrar']), 1500);
       },
-      error: e => { this.setMsg(e.error || 'Erro ao cadastrar.', true); this.carregando.set(false); }
+      error: (e: any) => { this.setMsg(e.error?.mensagem || 'Erro ao cadastrar.', true); this.carregando.set(false); }
     });
   }
 

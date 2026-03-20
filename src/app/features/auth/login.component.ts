@@ -162,7 +162,7 @@ export class LoginComponent {
 
     this.authService.login(this.login, this.senha).subscribe({
       next:  () => this.router.navigate(['/']),
-      error: () => { this.erro.set('Login ou senha inválidos.'); this.carregando.set(false); }
+      error: (e: any) => { this.erro.set(e.error?.mensagem || 'Login ou senha inválidos.'); this.carregando.set(false); }
     });
   }
 }

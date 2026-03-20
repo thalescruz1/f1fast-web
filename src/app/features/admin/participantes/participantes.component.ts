@@ -103,7 +103,7 @@ export class ParticipantesComponent implements OnInit {
     const role = (event.target as HTMLSelectElement).value;
     this.api.alterarRole(id, role).subscribe({
       next:  () => this.mensagem.set(`Role atualizada para ${role}.`),
-      error: () => this.mensagem.set('Erro ao atualizar role.')
+      error: (e: any) => this.mensagem.set(e.error?.mensagem || 'Erro ao atualizar role.')
     });
   }
 }

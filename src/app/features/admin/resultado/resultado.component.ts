@@ -163,7 +163,7 @@ export class ResultadoComponent implements OnInit {
 
     this.api.inserirResultado(req).subscribe({
       next:  () => { this.setMsg('Resultado salvo e pontos calculados!', false); this.salvando.set(false); },
-      error: e  => { this.setMsg(e.error || 'Erro ao salvar.', true); this.salvando.set(false); }
+      error: (e: any)  => { this.setMsg(e.error?.mensagem || 'Erro ao salvar.', true); this.salvando.set(false); }
     });
   }
 

@@ -131,7 +131,7 @@ export class RedefinirSenhaComponent implements OnInit {
     this.api.redefinirSenha(this.token, this.novaSenha).subscribe({
       next:  () => { this.concluido.set(true); this.carregando.set(false); },
       error: (err) => {
-        this.erro.set(err?.error ?? 'Token inválido ou expirado.');
+        this.erro.set(err?.error?.mensagem ?? 'Token inválido ou expirado.');
         this.carregando.set(false);
       }
     });

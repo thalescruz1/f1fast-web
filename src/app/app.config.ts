@@ -16,6 +16,7 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { errorInterceptor } from './core/interceptors/error.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -23,8 +24,9 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
 
     // Registra o HttpClient (necessário para fazer chamadas HTTP)
-    // withInterceptors([authInterceptor]) = adiciona o interceptor de JWT automaticamente
-    // Isso faz com que o token seja enviado em TODAS as requisições HTTP
-    provideHttpClient(withInterceptors([authInterceptor]))
+    // withInterceptors: interceptors executam na ORDEM do array:
+    //   1. authInterceptor → adiciona o token JWT no header
+    //   2. errorInterceptor → captura erros e exibe toasts
+    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor]))
   ]
 };

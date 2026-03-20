@@ -198,7 +198,7 @@ export class PalpitesCorridaComponent implements OnInit {
 
     this.api.getPalpitesPublicos(etapaId).subscribe({
       next:  p => { this.palpites.set(p); this.loading.set(false); },
-      error: e => { this.erro.set(e.error || 'Erro ao carregar palpites.'); this.loading.set(false); }
+      error: (e: any) => { this.erro.set(e.error?.mensagem || 'Erro ao carregar palpites.'); this.loading.set(false); }
     });
 
     this.api.getResultadoPublico(etapaId).subscribe({

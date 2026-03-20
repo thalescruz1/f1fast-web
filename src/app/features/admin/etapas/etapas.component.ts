@@ -187,7 +187,7 @@ export class EtapasAdminComponent implements OnInit {
       error: (err) => {
         this.salvando[etapa.id]  = false;
         this.erros[etapa.id]     = true;
-        this.mensagens[etapa.id] = err.error || 'Erro ao salvar prazo.';
+        this.mensagens[etapa.id] = err.error?.mensagem || 'Erro ao salvar prazo.';
       }
     });
   }

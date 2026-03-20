@@ -102,7 +102,7 @@ export class EsqueciSenhaComponent {
 
     this.api.esqueciSenha(this.email).subscribe({
       next:  () => { this.enviado.set(true); this.carregando.set(false); },
-      error: () => { this.erro.set('Erro ao enviar. Tente novamente.'); this.carregando.set(false); }
+      error: (e: any) => { this.erro.set(e.error?.mensagem || 'Erro ao enviar. Tente novamente.'); this.carregando.set(false); }
     });
   }
 }
