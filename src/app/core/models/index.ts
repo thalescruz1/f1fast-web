@@ -43,6 +43,13 @@ export interface Etapa {
   recordista:          string;  // Ex: "Charles Leclerc"
   tempoRecord:         string;  // Ex: "1:19.813"
   anoRecord:           number;  // Ex: 2022
+  // Horários das sessões (ISO strings ou null)
+  treinoLivre1:        string | null;
+  treinoLivre2:        string | null;
+  treinoLivre3:        string | null;  // null para Sprint weekends
+  classificacao:       string | null;
+  // SVG do traçado do circuito (markup completo)
+  circuitoSvg:         string;
 }
 
 /** Dados enviados ao API ao submeter um palpite */

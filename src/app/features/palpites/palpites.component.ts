@@ -1,18 +1,3 @@
-// ============================================================
-// COMPONENTE: PalpitesComponent  (/palpites)
-// ============================================================
-// Página índice de palpites — equivalente ao "apostasdacorrida.asp"
-// do site original. Exibe todas as 30 etapas do calendário e
-// permite navegar para os palpites de cada corrida já encerrada.
-//
-// Regra de visibilidade (idêntica ao backend):
-//   prazoExpirado || encerrada → card clicável → /palpites/:id
-//   prazo ainda aberto        → card inativo com aviso
-//
-// A página reusa os dados já existentes em getEtapas(),
-// sem necessidade de endpoint novo no backend.
-// ============================================================
-
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -24,159 +9,98 @@ import { Etapa } from '../../core/models';
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="page">
-      <div class="section-head">
-        <h2>Apostas da Corrida</h2>
-        <p>Os palpites de cada etapa ficam visíveis após o prazo limite de envio.</p>
+    <div class="pal-wrap">
+      <div class="page-header">
+        <div>
+          <div class="ph-eyebrow">Transparência</div>
+          <h1 class="ph-title">APOSTAS</h1>
+          <div class="ph-sub">Os palpites de cada etapa ficam visíveis após o prazo limite de envio</div>
+        </div>
+        <div class="ph-right">
+          <div class="ph-badge">{{ disponiveis() }}<span>/30</span></div>
+          <div class="ph-meta">Etapas disponíveis</div>
+        </div>
       </div>
 
       @if (loading()) {
         <div class="loading">Carregando...</div>
       } @else {
-
-        <!-- Contador: quantas corridas já têm palpites disponíveis -->
-        <div class="summary">
-          <span class="summary-count">
-            <strong>{{ disponiveis() }}</strong> de 30 etapas com palpites disponíveis
-          </span>
-        </div>
-
         <div class="grid">
           @for (e of etapas(); track e.id) {
-
-            <!-- Card clicável (encerrada ou prazo expirado) -->
             @if (e.encerrada || e.prazoExpirado) {
-              <a [routerLink]="['/palpites', e.id]" class="card-etapa card-aberta">
-                <div class="card-top">
-                  <span class="etapa-num">Etapa {{ e.numero }}</span>
+              <a [routerLink]="['/palpites', e.id]" class="card-etapa aberta">
+                <div class="ce-head">
+                  <span class="ce-num">R{{ e.numero }}</span>
                   @if (e.encerrada) {
-                    <span class="badge badge-enc">🏁 Encerrada</span>
+                    <span class="ce-badge enc">Encerrada</span>
                   } @else {
-                    <span class="badge badge-exp">🔓 Ver palpites</span>
+                    <span class="ce-badge exp">Ver palpites</span>
                   }
                 </div>
-                <div class="card-flag">{{ e.pais }}</div>
-                <div class="card-name">{{ e.nome }}</div>
-                <div class="card-circuit">{{ e.circuito }}</div>
-                <div class="card-date">{{ e.dataCorrida | date:'dd/MM · HH:mm' }}</div>
-                <div class="card-cta">Ver todos os palpites →</div>
+                <div class="ce-flag">{{ e.pais }}</div>
+                <div class="ce-name">{{ e.nome }}</div>
+                <div class="ce-circuit">{{ e.circuito }}</div>
+                <div class="ce-date">{{ e.dataCorrida | date:'dd/MM · HH:mm' }}</div>
+                <div class="ce-cta">Ver todos os palpites →</div>
               </a>
-
-            <!-- Card inativo (prazo ainda aberto) -->
             } @else {
-              <div class="card-etapa card-bloq">
-                <div class="card-top">
-                  <span class="etapa-num">Etapa {{ e.numero }}</span>
-                  <span class="badge badge-lock">🔒 Prazo aberto</span>
+              <div class="card-etapa bloq">
+                <div class="ce-head">
+                  <span class="ce-num">R{{ e.numero }}</span>
+                  <span class="ce-badge lock">Prazo aberto</span>
                 </div>
-                <div class="card-flag">{{ e.pais }}</div>
-                <div class="card-name">{{ e.nome }}</div>
-                <div class="card-circuit">{{ e.circuito }}</div>
-                <div class="card-date">{{ e.dataCorrida | date:'dd/MM · HH:mm' }}</div>
-                <div class="card-aviso">Disponível após o prazo</div>
+                <div class="ce-flag">{{ e.pais }}</div>
+                <div class="ce-name">{{ e.nome }}</div>
+                <div class="ce-circuit">{{ e.circuito }}</div>
+                <div class="ce-date">{{ e.dataCorrida | date:'dd/MM · HH:mm' }}</div>
+                <div class="ce-aviso">Disponível após o prazo</div>
               </div>
             }
-
           }
         </div>
       }
     </div>
   `,
   styles: [`
-    .summary {
-      margin-bottom: 16px;
-      font-size: 13px;
-      color: #6B6B6B;
-    }
-    .summary-count strong { color: #E10600; }
+    .pal-wrap { max-width: 1100px; margin: 0 auto; padding: 48px 32px; }
 
-    /* Grid responsivo: colunas de no mínimo 200px */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 12px;
-    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 2px; }
 
-    /* Base do card */
     .card-etapa {
-      border-radius: 8px;
-      padding: 16px;
-      border: 1px solid #E0E0E0;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      transition: all 0.2s;
-      position: relative;
-      overflow: hidden;
+      background: var(--s1); border: 1.5px solid var(--b1);
+      padding: 18px; display: flex; flex-direction: column; gap: 4px;
+      transition: background .15s;
     }
-
-    /* Card disponível — fundo branco, clicável */
-    .card-aberta {
-      background: white;
-      text-decoration: none;
-      color: inherit;
-      cursor: pointer;
-      border-left: 3px solid #E10600;
+    .card-etapa.aberta {
+      text-decoration: none; color: inherit; cursor: pointer;
+      border-left: 3px solid var(--red);
     }
-    .card-aberta:hover {
-      border-color: #E10600;
-      box-shadow: 0 4px 16px rgba(225, 6, 0, 0.12);
-      transform: translateY(-2px);
+    .card-etapa.aberta:hover { background: var(--s2); }
+    .card-etapa.bloq { opacity: .45; }
+
+    .ce-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .ce-num { font-family: var(--font-orb); font-size: var(--sz-xs); font-weight: 700; color: var(--w45); }
+    .ce-badge {
+      font-size: 10px; font-weight: 700; padding: 3px 8px;
+      text-transform: uppercase; letter-spacing: .5px;
     }
+    .ce-badge.enc { background: rgba(232,0,26,.12); color: var(--red); }
+    .ce-badge.exp { background: rgba(0,230,118,.12); color: var(--green); }
+    .ce-badge.lock { background: var(--s3); color: var(--w45); }
 
-    /* Card bloqueado — acinzentado, não clicável */
-    .card-bloq {
-      background: #FAFAFA;
-      opacity: 0.6;
-      cursor: default;
+    .ce-flag { font-size: 24px; }
+    .ce-name { font-family: var(--font-display); font-weight: 700; font-size: var(--sz-base); text-transform: uppercase; }
+    .ce-circuit { font-size: var(--sz-sm); color: var(--w45); }
+    .ce-date { font-size: var(--sz-sm); color: var(--w45); }
+    .ce-cta { margin-top: 8px; font-size: var(--sz-sm); font-weight: 700; color: var(--red); }
+    .ce-aviso { margin-top: 8px; font-size: var(--sz-sm); color: var(--w20); font-style: italic; }
+
+    .loading { text-align: center; padding: 40px; color: var(--w45); }
+
+    @media (max-width: 768px) {
+      .pal-wrap { padding: 24px 16px; }
+      .grid { grid-template-columns: 1fr; }
     }
-    /* Checkered pattern no rodapé do card bloqueado */
-    .card-bloq::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: repeating-conic-gradient(#E0E0E0 0% 25%, transparent 0% 50%) 0 0 / 4px 4px;
-    }
-
-    .card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-    .etapa-num { font-size: 11px; color: #6B6B6B; font-weight: 500; }
-
-    /* Badges */
-    .badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
-    .badge-enc  { background: rgba(225,6,0,0.1); color: #E10600; }
-    .badge-exp  { background: rgba(22,163,74,0.1); color: #166534; }
-    .badge-lock { background: rgba(0,0,0,0.05);    color: #9E9E9E; }
-
-    .card-flag    { font-size: 28px; margin-bottom: 4px; }
-    .card-name    { font-size: 14px; font-weight: 700; color: #1A1A1A; }
-    .card-circuit { font-size: 12px; color: #6B6B6B; }
-    .card-date    { font-size: 12px; color: #6B6B6B; margin-top: 4px; }
-
-    /* Chamada para ação no card disponível */
-    .card-cta {
-      margin-top: 10px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #0057E1;
-    }
-
-    /* Aviso no card bloqueado */
-    .card-aviso {
-      margin-top: 10px;
-      font-size: 11px;
-      color: #9E9E9E;
-      font-style: italic;
-    }
-
-    .loading { text-align: center; padding: 40px; color: #6B6B6B; }
   `]
 })
 export class PalpitesComponent implements OnInit {
@@ -185,16 +109,11 @@ export class PalpitesComponent implements OnInit {
   etapas  = signal<Etapa[]>([]);
   loading = signal(true);
 
-  // computed() = valor derivado de um signal.
-  // Recalcula automaticamente sempre que etapas() mudar.
-  // Conta quantas etapas já têm palpites disponíveis.
   disponiveis = computed(() =>
     this.etapas().filter(e => e.encerrada || e.prazoExpirado).length
   );
 
   ngOnInit() {
-    // Reutiliza o endpoint público GET /api/etapas — sem endpoint novo no backend.
-    // Os campos encerrada e prazoExpirado já vêm no EtapaDto.
     this.api.getEtapas().subscribe({
       next:  e => { this.etapas.set(e); this.loading.set(false); },
       error: () => this.loading.set(false)

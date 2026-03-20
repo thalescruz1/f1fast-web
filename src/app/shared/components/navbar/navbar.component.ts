@@ -1,21 +1,3 @@
-// ============================================================
-// COMPONENTE: NavbarComponent
-// ============================================================
-// Barra de navegação superior fixa — presente em todas as páginas.
-// Renderizada no app.component.html ou no layout principal.
-//
-// Comportamento dinâmico baseado no estado de autenticação:
-//   - Usuário DESLOGADO → mostra botões "Entrar" e "Cadastrar"
-//   - Usuário LOGADO    → mostra nome do usuário + botão "Sair"
-//   - Usuário ADMIN     → mostra também o link "Admin" em vermelho
-//
-// RouterLinkActive = diretiva que adiciona uma classe CSS ao link
-// quando a rota correspondente está ativa (URL atual).
-//
-// position: sticky; top: 0 = a navbar fica fixada no topo da
-// página mesmo ao rolar o conteúdo.
-// ============================================================
-
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -26,192 +8,161 @@ import { AuthService } from '../../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive],
   template: `
-    <nav class="navbar">
+    <nav class="nav">
+      <a routerLink="/" class="nav-logo" (click)="fecharMenu()">
+        <img src="logo.png" class="logo-img" alt="F1Fast">
+        <span class="nl-f1">F1</span><span class="nl-fast">FAST</span>
+      </a>
 
-      <!-- ── Linha superior: logo + botão hambúrguer ── -->
-      <!-- Em desktop: logo fica alinhado normalmente no flex da navbar.
-           Em mobile: esta div vira uma "barra" com logo à esquerda e ☰ à direita. -->
-      <div class="navbar-top">
-        <a routerLink="/" class="logo" (click)="fecharMenu()">
-          <img src="logo.png" class="logo-img" alt="F1Fast">
-          F1<span>FAST</span>
-        </a>
-
-        <!-- Botão hambúrguer — VISÍVEL APENAS em mobile (≤768px).
-             "menuAberto()" lê o signal para mostrar ☰ ou ✕.
-             [attr.aria-expanded] = acessibilidade: informa ao leitor de tela se está aberto. -->
-        <button class="hamburger" (click)="toggleMenu()" [attr.aria-expanded]="menuAberto()">
-          {{ menuAberto() ? '✕' : '☰' }}
-        </button>
-      </div>
-
-      <!-- ── Links de navegação ──
-           Desktop: display flex horizontal, sempre visível.
-           Mobile:  oculto por padrão; classe ".aberto" o torna visível como coluna. -->
-      <div class="nav-links" [class.aberto]="menuAberto()">
-        <!-- [routerLinkActiveOptions]="{exact:true}" é necessário para o link "Home"
-             porque "/" é prefixo de TODAS as rotas. Sem "exact:true", o link "Home"
-             ficaria ativo mesmo em /ranking, /palpite etc. -->
-        <a routerLink="/"            routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" (click)="fecharMenu()">Home</a>
-        <a routerLink="/ranking"     routerLinkActive="active" (click)="fecharMenu()">Ranking</a>
-        <a routerLink="/palpite"     routerLinkActive="active" (click)="fecharMenu()">Palpite</a>
-        <!-- routerLinkActive="active" no link "/palpites" ficaria ativo também em
-             "/palpites/5" (sub-rota), o que é o comportamento desejado aqui. -->
-        <a routerLink="/palpites"    routerLinkActive="active" (click)="fecharMenu()">Apostas</a>
-        <a routerLink="/calendario"  routerLinkActive="active" (click)="fecharMenu()">Calendário</a>
-        <a routerLink="/regulamento" routerLinkActive="active" (click)="fecharMenu()">Regulamento</a>
-        <!-- Link Admin: só aparece se o usuário for administrador.
-             auth.isAdmin() lê o signal do AuthService — atualiza automaticamente
-             quando o login/logout muda o estado. -->
+      <div class="nav-links">
+        <a class="nl" routerLink="/"            routerLinkActive="on" [routerLinkActiveOptions]="{exact:true}">Home</a>
+        <a class="nl" routerLink="/ranking"     routerLinkActive="on">Ranking</a>
+        <a class="nl" routerLink="/palpite"     routerLinkActive="on">Palpite</a>
+        <a class="nl" routerLink="/palpites"    routerLinkActive="on">Apostas</a>
+        <a class="nl" routerLink="/calendario"  routerLinkActive="on">Calendário</a>
+        <a class="nl" routerLink="/regulamento" routerLinkActive="on">Regulamento</a>
         @if (auth.isAdmin()) {
-          <a routerLink="/admin" routerLinkActive="active" class="admin-link" (click)="fecharMenu()">Admin</a>
+          <a class="nl admin-link" routerLink="/admin" routerLinkActive="on">Admin</a>
         }
       </div>
 
-      <!-- ── Área de autenticação ──
-           Desktop: botões à direita, sempre visíveis.
-           Mobile:  oculta por padrão; aparece abaixo dos links quando o menu está aberto. -->
-      <div class="nav-auth" [class.aberto]="menuAberto()">
-        <!-- auth.isLoggedIn() = lê o signal do AuthService.
-             Se logado, mostra nome e botão Sair.
-             Se não logado, mostra Entrar e Cadastrar. -->
+      <div class="nav-ctas">
         @if (auth.isLoggedIn()) {
-          <!-- auth.currentUser()?.nome = acessa o nome do usuário logado.
-               "?." = optional chaining: não dá erro se currentUser() for null -->
-          <span class="user-name">👤 {{ auth.currentUser()?.nome }}</span>
-          <!-- fecharMenu() fecha o drawer antes de redirecionar após logout -->
-          <button class="btn btn-ghost" (click)="auth.logout(); fecharMenu()">Sair</button>
+          <span class="user-name">{{ auth.currentUser()?.login }}</span>
+          <button class="btn-ghost-nav" (click)="auth.logout(); fecharMenu()">Sair</button>
         } @else {
-          <a routerLink="/entrar"   class="btn btn-ghost" (click)="fecharMenu()">Entrar</a>
-          <a routerLink="/cadastro" class="btn btn-red"   (click)="fecharMenu()">Cadastrar</a>
+          <a routerLink="/entrar"   class="btn-ghost-nav">Entrar</a>
+          <a routerLink="/cadastro" class="btn-red-nav">Cadastrar</a>
         }
       </div>
 
+      <button class="hamburger" (click)="toggleMenu()" [attr.aria-expanded]="menuAberto()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
     </nav>
+
+    @if (menuAberto()) {
+      <div class="mob-overlay" (click)="fecharMenu()"></div>
+      <div class="mob-menu">
+        <a class="mob-link" routerLink="/"            routerLinkActive="on" [routerLinkActiveOptions]="{exact:true}" (click)="fecharMenu()">Home</a>
+        <a class="mob-link" routerLink="/ranking"     routerLinkActive="on" (click)="fecharMenu()">Ranking</a>
+        <a class="mob-link" routerLink="/palpite"     routerLinkActive="on" (click)="fecharMenu()">Palpite</a>
+        <a class="mob-link" routerLink="/palpites"    routerLinkActive="on" (click)="fecharMenu()">Apostas</a>
+        <a class="mob-link" routerLink="/calendario"  routerLinkActive="on" (click)="fecharMenu()">Calendário</a>
+        <a class="mob-link" routerLink="/regulamento" routerLinkActive="on" (click)="fecharMenu()">Regulamento</a>
+        @if (auth.isAdmin()) {
+          <a class="mob-link admin-link" routerLink="/admin" routerLinkActive="on" (click)="fecharMenu()">Admin</a>
+        }
+        <div class="mob-auth">
+          @if (auth.isLoggedIn()) {
+            <span class="mob-user">{{ auth.currentUser()?.login }}</span>
+            <button class="btn-red-nav mob-btn" (click)="auth.logout(); fecharMenu()">Sair</button>
+          } @else {
+            <a routerLink="/entrar"   class="btn-ghost-nav mob-btn" (click)="fecharMenu()">Entrar</a>
+            <a routerLink="/cadastro" class="btn-red-nav mob-btn"   (click)="fecharMenu()">Cadastrar</a>
+          }
+        </div>
+      </div>
+    }
   `,
   styles: [`
-    /* ═══════════════════════════════════════════════════
-       DESKTOP (padrão — tela grande)
-       Tudo numa linha horizontal, altura fixa de 56px.
-    ═══════════════════════════════════════════════════ */
-    .navbar {
-      background: #1A1A1A;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 32px; height: 56px;
+    .nav {
       position: sticky; top: 0; z-index: 100;
-      border-bottom: 3px solid #E10600;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px; height: 64px;
+      background: rgba(5,5,7,.97);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--b1);
     }
+    .nav-logo {
+      font-family: var(--font-orb); font-size: 20px; font-weight: 700;
+      letter-spacing: 3px; text-decoration: none;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .logo-img { height: 32px; width: auto; }
+    .nl-f1 { color: var(--white); }
+    .nl-fast { color: var(--red); }
 
-    /* "display: contents" faz a div desaparecer do layout:
-       seus filhos (logo e hamburger) participam diretamente
-       do flex da .navbar — como se a div não existisse. */
-    .navbar-top { display: contents; }
+    .nav-links { display: flex; gap: 4px; }
+    .nl {
+      font-family: var(--font-display); font-size: var(--sz-sm);
+      font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--w45); text-decoration: none; padding: 8px 14px;
+      transition: color .15s; position: relative;
+    }
+    .nl:hover { color: var(--w90); }
+    .nl.on { color: var(--white); }
+    .nl.on::after {
+      content: ''; position: absolute; bottom: -20px;
+      left: 10px; right: 10px; height: 2px;
+      background: var(--red); border-radius: 2px 2px 0 0;
+    }
+    .admin-link { color: var(--red) !important; }
 
-    .logo { font-family: 'Orbitron', monospace; font-size: 18px; color: white; letter-spacing: 2px; text-decoration: none; display: flex; align-items: center; gap: 10px; }
-    .logo span { color: #0057E1; }
-    .logo-img { height: 30px; width: auto; display: block; }
+    .nav-ctas { display: flex; gap: 10px; align-items: center; }
+    .user-name {
+      font-family: var(--font-display); font-size: var(--sz-sm);
+      font-weight: 600; color: var(--w70);
+    }
+    .btn-ghost-nav {
+      font-family: var(--font-display); font-size: var(--sz-xs);
+      font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+      padding: 8px 16px; border-radius: 4px;
+      background: transparent; border: 1.5px solid var(--b2);
+      color: var(--w70); cursor: pointer; text-decoration: none;
+      transition: all .15s;
+    }
+    .btn-ghost-nav:hover { border-color: var(--w45); color: var(--white); }
+    .btn-red-nav {
+      font-family: var(--font-display); font-size: var(--sz-xs);
+      font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+      padding: 8px 16px; border-radius: 4px;
+      background: var(--red); border: none;
+      color: white; cursor: pointer; text-decoration: none;
+    }
+    .btn-red-nav:hover { transform: translateY(-1px); }
 
-    /* Hambúrguer invisível em desktop */
     .hamburger { display: none; }
 
-    .nav-links { display: flex; gap: 2px; }
-    .nav-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 14px; border-radius: 4px; transition: color 0.15s; position: relative; }
-    .nav-links a:hover, .nav-links a.active { color: white; }
-    .nav-links a.active::after { content: ''; position: absolute; bottom: -18px; left: 8px; right: 8px; height: 3px; background: #E10600; border-radius: 2px 2px 0 0; }
-    .admin-link { color: #0057E1 !important; }
-
-    .nav-auth { display: flex; gap: 8px; align-items: center; }
-    .user-name { font-size: 13px; color: rgba(255,255,255,0.7); }
-    .btn { padding: 7px 16px; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: inline-block; }
-    .btn-ghost { background: transparent; color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.2); }
-    .btn-red { background: #0057E1; color: white; }
-
-    /* ═══════════════════════════════════════════════════
-       MOBILE (≤ 768px)
-       Navbar vira um drawer vertical com hambúrguer.
-    ═══════════════════════════════════════════════════ */
     @media (max-width: 768px) {
-
-      /* Navbar em mobile: empilha as seções verticalmente */
-      .navbar {
-        flex-wrap: wrap;
-        height: auto;
-        padding: 0;
-      }
-
-      /* Linha do topo: logo à esquerda, ☰ à direita */
-      .navbar-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        padding: 0 16px;
-        height: 56px;
-      }
-
-      /* Botão hambúrguer — aparece só em mobile */
+      .nav { padding: 0 16px; }
+      .nav-links, .nav-ctas { display: none; }
       .hamburger {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: none;
-        border: none;
-        color: white;
-        font-size: 22px;
-        cursor: pointer;
-        padding: 8px;
-        line-height: 1;
+        display: flex; flex-direction: column; gap: 5px;
+        background: none; border: none; cursor: pointer; padding: 8px;
       }
-
-      /* Links: ocultos por padrão; ".aberto" os exibe em coluna */
-      .nav-links {
-        display: none;
-        width: 100%;
-        flex-direction: column;
-        gap: 0;
-        border-top: 1px solid rgba(255,255,255,0.1);
+      .hamburger span {
+        display: block; width: 22px; height: 2px;
+        background: var(--white); border-radius: 1px;
       }
-      .nav-links.aberto { display: flex; }
-      .nav-links a {
-        padding: 14px 20px;
-        font-size: 15px;
-        border-radius: 0;
-        border-bottom: 1px solid rgba(255,255,255,0.06);
+      .mob-overlay {
+        position: fixed; inset: 0; z-index: 98;
+        background: rgba(0,0,0,.6);
       }
-
-      /* Auth: oculto por padrão; ".aberto" o exibe em coluna */
-      .nav-auth {
-        display: none;
-        width: 100%;
-        flex-direction: column;
-        padding: 12px 16px;
-        gap: 8px;
-        border-top: 1px solid rgba(255,255,255,0.1);
+      .mob-menu {
+        position: fixed; top: 64px; left: 0; right: 0; z-index: 99;
+        background: var(--s1); border-bottom: 1px solid var(--b1);
+        padding: 8px 0 16px;
+        animation: slideDown .2s ease;
       }
-      .nav-auth.aberto { display: flex; }
-
-      /* Botões ocupam largura total em mobile */
-      .btn { width: 100%; text-align: center; }
-      .user-name { font-size: 14px; }
+      @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+      .mob-link {
+        display: block; padding: 14px 24px;
+        font-family: var(--font-display); font-size: var(--sz-base);
+        font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+        color: var(--w45); text-decoration: none;
+        border-bottom: 1px solid var(--b1);
+      }
+      .mob-link:hover, .mob-link.on { color: var(--white); }
+      .mob-auth { padding: 16px 24px 0; display: flex; flex-direction: column; gap: 8px; }
+      .mob-user { font-family: var(--font-display); font-size: var(--sz-sm); font-weight: 600; color: var(--w70); padding: 8px 0; }
+      .mob-btn { width: 100%; text-align: center; padding: 12px 16px; }
     }
   `]
 })
 export class NavbarComponent {
-  // auth é público (sem "private") porque o template acessa
-  // auth.isLoggedIn(), auth.isAdmin(), auth.currentUser() e auth.logout()
-  // diretamente no HTML. Em Angular, templates só acessam membros públicos.
   auth = inject(AuthService);
-
-  // Signal booleano que controla se o menu mobile está aberto ou fechado.
-  // "signal(false)" = começa fechado. A classe CSS ".aberto" é adicionada
-  // dinamicamente via [class.aberto]="menuAberto()" no template.
   menuAberto = signal(false);
-
-  // Alterna entre aberto/fechado a cada clique no hambúrguer.
-  // ".update(v => !v)" = inverte o valor atual do signal.
   toggleMenu() { this.menuAberto.update(v => !v); }
-
-  // Fecha o menu (chamado ao clicar em qualquer link ou ao fazer logout).
   fecharMenu() { this.menuAberto.set(false); }
 }

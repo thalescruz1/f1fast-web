@@ -1,21 +1,3 @@
-// ============================================================
-// COMPONENTE: ResultadoComponent
-// ============================================================
-// Componente filho do AdminComponent — renderizado em /admin/resultado.
-// Permite ao administrador inserir o resultado oficial de uma corrida.
-//
-// Fluxo completo ao clicar "Salvar e Calcular Pontos":
-//   1. Frontend envia o ResultadoRequest para PATCH /admin/resultado
-//   2. A API salva o resultado no banco de dados
-//   3. A API chama automaticamente o PontuacaoService
-//   4. O PontuacaoService compara cada palpite com o resultado
-//   5. Os pontos são calculados e salvos na tabela Pontuacao
-//   6. O ranking é recalculado
-//
-// Nota: etapas encerradas aparecem com "✓" e ficam desabilitadas
-// no select para evitar reenvio acidental de resultados.
-// ============================================================
-
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -29,22 +11,20 @@ import { Piloto, Etapa, ResultadoRequest } from '../../../core/models';
   template: `
     <div class="header">
       <h3>Inserir Resultado</h3>
-      <!-- Select de etapas: etapas encerradas ficam desabilitadas [disabled]="e.encerrada" -->
-      <select class="form-select" style="width:220px" [(ngModel)]="etapaSelecionadaId">
+      <select class="adm-select" style="width:220px" [(ngModel)]="etapaSelecionadaId">
         <option [ngValue]="0">Selecione a etapa</option>
         @for (e of etapas(); track e.id) {
           <option [ngValue]="e.id" [disabled]="e.encerrada">
-            {{ e.pais }} {{ e.nome }} {{ e.encerrada ? '✓' : '' }}
+            {{ e.pais }} {{ e.nome }} {{ e.encerrada ? '(enc.)' : '' }}
           </option>
         }
       </select>
     </div>
 
     <div class="form">
-      <!-- Campo de Pole Position -->
       <div class="form-row">
-        <label class="form-label" style="color:#996F00">Pole</label>
-        <select class="form-select" [(ngModel)]="form['poleId']">
+        <label class="form-label pole">Pole</label>
+        <select class="adm-select" [(ngModel)]="form['poleId']">
           <option [ngValue]="0">Selecione o Pole Position</option>
           @for (p of pilotos(); track p.id) {
             <option [ngValue]="p.id">{{ p.numero }} — {{ p.nome }}</option>
@@ -52,11 +32,10 @@ import { Piloto, Etapa, ResultadoRequest } from '../../../core/models';
         </select>
       </div>
 
-      <!-- Campos de 1° ao 10° lugar gerados automaticamente pelo loop -->
       @for (pos of posicoes; track pos.key) {
         <div class="form-row">
           <label class="form-label">{{ pos.label }}</label>
-          <select class="form-select" [(ngModel)]="form[pos.key]">
+          <select class="adm-select" [(ngModel)]="form[pos.key]">
             <option [ngValue]="0">Selecione</option>
             @for (p of pilotos(); track p.id) {
               <option [ngValue]="p.id">{{ p.numero }} — {{ p.nome }}</option>
@@ -65,10 +44,9 @@ import { Piloto, Etapa, ResultadoRequest } from '../../../core/models';
         </div>
       }
 
-      <!-- Campo de Melhor Volta -->
       <div class="form-row">
-        <label class="form-label" style="color:#16A34A">Mel. Volta</label>
-        <select class="form-select" [(ngModel)]="form['melhorVoltaId']">
+        <label class="form-label mv">Mel. Volta</label>
+        <select class="adm-select" [(ngModel)]="form['melhorVoltaId']">
           <option [ngValue]="0">Selecione</option>
           @for (p of pilotos(); track p.id) {
             <option [ngValue]="p.id">{{ p.numero }} — {{ p.nome }}</option>
@@ -77,50 +55,69 @@ import { Piloto, Etapa, ResultadoRequest } from '../../../core/models';
       </div>
 
       @if (mensagem()) {
-        <div class="msg" [class.error]="msgErro()">{{ mensagem() }}</div>
+        <div class="msg" [class.error]="msgErro()" [class.success]="!msgErro()">{{ mensagem() }}</div>
       }
 
       <div class="form-footer">
-        <!-- Botão Limpar: zera todos os selects -->
-        <button class="btn btn-ghost" (click)="resetForm()">Limpar</button>
-        <!-- Botão principal: salva e dispara o cálculo de pontos -->
-        <button class="btn btn-red" (click)="salvar()" [disabled]="salvando()">
-          {{ salvando() ? 'Salvando...' : '💾 Salvar e Calcular Pontos' }}
+        <button class="btn-ghost" (click)="resetForm()">Limpar</button>
+        <button class="btn-red" (click)="salvar()" [disabled]="salvando()">
+          {{ salvando() ? 'Salvando...' : 'Salvar e Calcular Pontos' }}
         </button>
       </div>
     </div>
   `,
   styles: [`
-    .header { padding: 16px 20px; border-bottom: 1px solid #E0E0E0; display: flex; justify-content: space-between; align-items: center; }
-    .header h3 { font-size: 15px; font-weight: 700; }
-    .form { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .header {
+      padding: 16px 0; border-bottom: 1px solid var(--b1);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .header h3 {
+      font-family: var(--font-orb); font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 2px; color: var(--red);
+    }
+    .form { padding: 20px 0; display: flex; flex-direction: column; gap: 10px; }
     .form-row { display: grid; grid-template-columns: 100px 1fr; gap: 12px; align-items: center; }
-    .form-label { font-size: 12px; font-weight: 600; color: #6B6B6B; text-align: right; }
-    .form-select { width: 100%; padding: 9px 12px; background: white; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 13px; font-family: inherit; }
-    .form-select:focus { outline: none; border-color: #0057E1; }
-    .msg { padding: 10px 14px; border-radius: 6px; font-size: 13px; background: #dcfce7; color: #166534; }
-    .msg.error { background: #fee2e2; color: #991b1b; }
-    .form-footer { display: flex; justify-content: flex-end; gap: 8px; padding-top: 12px; border-top: 1px solid #E0E0E0; }
-    .btn { padding: 8px 16px; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
-    .btn-ghost { background: transparent; border: 1px solid #E0E0E0; color: #6B6B6B; }
-    .btn-red { background: #0057E1; color: white; }
+    .form-label {
+      font-size: var(--sz-sm); font-weight: 700; color: var(--w45);
+      text-align: right; text-transform: uppercase; letter-spacing: .5px;
+    }
+    .form-label.pole { color: var(--gold); }
+    .form-label.mv { color: var(--green); }
+
+    .adm-select {
+      width: 100%; padding: 10px 12px;
+      background: var(--s2); border: 1.5px solid var(--b2);
+      color: var(--white); font-size: var(--sz-sm); font-family: var(--font-body);
+    }
+    .adm-select:focus { outline: none; border-color: var(--red); }
+    .adm-select option { background: var(--s2); color: var(--white); }
+
+    .form-footer {
+      display: flex; justify-content: flex-end; gap: 8px;
+      padding-top: 16px; border-top: 1px solid var(--b1);
+    }
+    .btn-ghost {
+      padding: 10px 20px; background: transparent; border: 1.5px solid var(--b3);
+      color: var(--w70); font-size: var(--sz-sm); font-weight: 600; cursor: pointer;
+    }
+    .btn-red {
+      padding: 10px 20px; background: var(--red); border: 1.5px solid var(--red);
+      color: #fff; font-size: var(--sz-sm); font-weight: 600; cursor: pointer;
+    }
+    .btn-red:disabled { opacity: .5; cursor: not-allowed; }
   `]
 })
 export class ResultadoComponent implements OnInit {
   private api = inject(ApiService);
 
-  pilotos  = signal<Piloto[]>([]);   // 22 pilotos carregados da API
-  etapas   = signal<Etapa[]>([]);    // todas as 30 etapas
+  pilotos  = signal<Piloto[]>([]);
+  etapas   = signal<Etapa[]>([]);
   salvando = signal(false);
   mensagem = signal('');
   msgErro  = signal(false);
 
-  // ID da etapa selecionada no select do topo. 0 = nenhuma selecionada.
   etapaSelecionadaId = 0;
 
-  // Objeto de formulário com todos os campos de resultado.
-  // Estrutura idêntica ao PalpiteComponent, mas sem restrição de pilotos únicos
-  // (o admin precisa confirmar o resultado oficial como veio).
   form: Record<string, number> = {
     poleId: 0, pos1Id: 0, pos2Id: 0, pos3Id: 0, pos4Id: 0,
     pos5Id: 0, pos6Id: 0, pos7Id: 0, pos8Id: 0, pos9Id: 0,
@@ -128,23 +125,19 @@ export class ResultadoComponent implements OnInit {
   };
 
   posicoes = [
-    { key: 'pos1Id',  label: '1° lugar'  }, { key: 'pos2Id',  label: '2° lugar'  },
-    { key: 'pos3Id',  label: '3° lugar'  }, { key: 'pos4Id',  label: '4° lugar'  },
-    { key: 'pos5Id',  label: '5° lugar'  }, { key: 'pos6Id',  label: '6° lugar'  },
-    { key: 'pos7Id',  label: '7° lugar'  }, { key: 'pos8Id',  label: '8° lugar'  },
-    { key: 'pos9Id',  label: '9° lugar'  }, { key: 'pos10Id', label: '10° lugar' },
-    { key: 'pos11Id', label: '11° lugar' }
+    { key: 'pos1Id',  label: '1°' }, { key: 'pos2Id',  label: '2°' },
+    { key: 'pos3Id',  label: '3°' }, { key: 'pos4Id',  label: '4°' },
+    { key: 'pos5Id',  label: '5°' }, { key: 'pos6Id',  label: '6°' },
+    { key: 'pos7Id',  label: '7°' }, { key: 'pos8Id',  label: '8°' },
+    { key: 'pos9Id',  label: '9°' }, { key: 'pos10Id', label: '10°' },
+    { key: 'pos11Id', label: '11°' }
   ];
 
   ngOnInit() {
-    // Carrega pilotos e etapas em paralelo para preencher os selects
     this.api.getPilotos().subscribe(p => this.pilotos.set(p));
     this.api.getEtapas().subscribe(e => this.etapas.set(e));
   }
 
-  // Zera todos os campos do formulário para começar um novo resultado.
-  // Object.keys() = retorna um array com todas as chaves do objeto form.
-  // forEach = itera e define cada campo como 0.
   resetForm() {
     Object.keys(this.form).forEach(k => this.form[k] = 0);
     this.mensagem.set('');
@@ -152,14 +145,10 @@ export class ResultadoComponent implements OnInit {
 
   salvar() {
     if (this.etapaSelecionadaId === 0) { this.setMsg('Selecione uma etapa.', true); return; }
-
-    // Object.values() = array de todos os valores do objeto form.
-    // .some(v => v === 0) = true se ALGUM campo ainda não foi preenchido.
     if (Object.values(this.form).some(v => v === 0)) { this.setMsg('Preencha todas as posições.', true); return; }
 
     this.salvando.set(true);
 
-    // Monta o ResultadoRequest para PATCH /admin/resultado
     const req: ResultadoRequest = {
       etapaId: this.etapaSelecionadaId,
       poleId: this.form['poleId'],
@@ -172,9 +161,8 @@ export class ResultadoComponent implements OnInit {
       melhorVoltaId: this.form['melhorVoltaId']
     };
 
-    // A API salva o resultado E já dispara o cálculo de pontos automaticamente
     this.api.inserirResultado(req).subscribe({
-      next:  () => { this.setMsg('Resultado salvo e pontos calculados! ✅', false); this.salvando.set(false); },
+      next:  () => { this.setMsg('Resultado salvo e pontos calculados!', false); this.salvando.set(false); },
       error: e  => { this.setMsg(e.error || 'Erro ao salvar.', true); this.salvando.set(false); }
     });
   }

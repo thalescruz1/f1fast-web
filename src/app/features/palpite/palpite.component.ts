@@ -1,30 +1,15 @@
-// ============================================================
-// COMPONENTE: PalpiteComponent
-// ============================================================
-// Responsável pela página de envio de palpites (/palpite).
-// Esta é a página principal do campeonato — onde o usuário
-// escolhe o Pole Position, 1° ao 10° lugar e Melhor Volta
-// para a próxima corrida.
-//
-// Modificações:
-//   - Exibe o nome da pista (circuito) no cabeçalho
-//   - Após envio bem-sucedido, exibe tela de confirmação
-//     com o palpite registrado para conferência
-// ============================================================
-
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { Piloto, Etapa, PalpiteRequest } from '../../core/models';
 
-/** Palpite confirmado para exibição na tela de conferência */
 interface PalpiteConfirmado {
-  etapaNome:     string;
-  circuito:      string;
-  pole:          string;
-  posicoes:      string[];  // 10 posições (1° ao 10°)
-  melhorVolta:   string;
+  etapaNome: string;
+  circuito: string;
+  pole: string;
+  posicoes: string[];
+  melhorVolta: string;
 }
 
 @Component({
@@ -32,184 +17,332 @@ interface PalpiteConfirmado {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="page">
+    <div class="palpite-wrap">
 
-      <!-- ===== TELA DE CONFIRMAÇÃO (após envio bem-sucedido) ===== -->
+      <!-- Confirmação -->
       @if (palpiteConfirmado()) {
-        <div class="section-head">
-          <h2>Palpite Registrado ✅</h2>
-          <p>Confira abaixo o seu palpite para o {{ palpiteConfirmado()!.etapaNome }}.</p>
-        </div>
-
-        <div class="card confirmacao-card">
-          <div class="conf-header">
-            <div class="conf-title">{{ palpiteConfirmado()!.etapaNome }}</div>
-            <div class="conf-sub">{{ palpiteConfirmado()!.circuito }}</div>
-          </div>
-          <div class="conf-body">
-            <div class="conf-item pole">
-              <span class="conf-label">Pole Position</span>
-              <span class="conf-value">{{ palpiteConfirmado()!.pole }}</span>
+        <div class="conf-layout">
+          <div class="conf-card rc-hud">
+            <div class="conf-head">
+              <div class="conf-icon">&#10003;</div>
+              <div class="conf-title">Palpite Registrado</div>
+              <div class="conf-sub">{{ palpiteConfirmado()!.etapaNome }} · {{ palpiteConfirmado()!.circuito }}</div>
             </div>
-            @for (pos of palpiteConfirmado()!.posicoes; track $index) {
-              <div class="conf-item">
-                <span class="conf-label">{{ $index + 1 }}°</span>
-                <span class="conf-value">{{ pos }}</span>
+            <div class="conf-body">
+              <div class="conf-item pole">
+                <span class="conf-label">Pole Position</span>
+                <span class="conf-value">{{ palpiteConfirmado()!.pole }}</span>
               </div>
-            }
-            <div class="conf-item mv">
-              <span class="conf-label">Melhor Volta</span>
-              <span class="conf-value">{{ palpiteConfirmado()!.melhorVolta }}</span>
+              @for (pos of palpiteConfirmado()!.posicoes; track $index) {
+                <div class="conf-item">
+                  <span class="conf-label">{{ $index + 1 }}°</span>
+                  <span class="conf-value">{{ pos }}</span>
+                </div>
+              }
+              <div class="conf-item mv">
+                <span class="conf-label">Melhor Volta</span>
+                <span class="conf-value">{{ palpiteConfirmado()!.melhorVolta }}</span>
+              </div>
             </div>
-          </div>
-          <div class="conf-footer">
-            <button class="btn btn-outline" (click)="editarPalpite()">Alterar Palpite</button>
+            <div class="conf-footer">
+              <button class="btn-outline" (click)="editarPalpite()">Alterar Palpite</button>
+            </div>
           </div>
         </div>
       }
 
-      <!-- ===== FORMULÁRIO DE PALPITE ===== -->
+      <!-- Formulário -->
       @else {
-        <div class="section-head">
-          <h2>Fazer Palpite</h2>
-          <p>Escolha Pole, 1° ao 10° e Melhor Volta. Envie antes do prazo!</p>
-        </div>
-
         @if (loading()) {
           <div class="loading">Carregando...</div>
         } @else if (!proximaEtapa()) {
-          <div class="card empty">Não há etapas disponíveis para palpite no momento.</div>
+          <div class="empty-msg">Não há etapas disponíveis para palpite no momento.</div>
         } @else {
-          <div class="bolao-layout">
-            <div class="card">
-              <div class="bolao-header">
-                <div>
-                  <h3>{{ proximaEtapa()!.pais }} {{ proximaEtapa()!.nome }}</h3>
-                  <!-- Nome da pista (circuito) -->
-                  <div class="circuit-name">📍 {{ proximaEtapa()!.circuito }}</div>
+          <div class="palpite-layout">
+            <div class="palpite-main">
+              <!-- GP Header -->
+              <div class="gp-header">
+                <div class="gp-chip">
+                  <span class="ldot"></span>
+                  <span>Etapa {{ proximaEtapa()!.numero }}</span>
                 </div>
-                <span class="deadline-tag">⏱ Prazo: {{ proximaEtapa()!.prazoQualify | date:'dd/MM HH:mm' }}</span>
+                <h1 class="gp-name">{{ proximaEtapa()!.pais }} {{ proximaEtapa()!.nome }}</h1>
+                <div class="gp-circuit">{{ proximaEtapa()!.circuito }} · {{ proximaEtapa()!.cidade }}</div>
               </div>
-              <div class="bolao-form">
 
-                <div class="form-row">
-                  <label class="form-label pole">Pole</label>
-                  <select class="form-select" [(ngModel)]="form['poleId']">
-                    <option [ngValue]="0">Selecione o Pole Position</option>
-                    @for (p of pilotos(); track p.id) {
-                      <option [ngValue]="p.id">{{ p.numero }} — {{ p.nome }} ({{ p.equipe }})</option>
-                    }
-                  </select>
-                </div>
-
-                <div class="divider"></div>
-
+              <!-- Position Grid -->
+              <div class="section-label">Posições de Chegada</div>
+              <div class="pos-grid">
                 @for (pos of posicoes; track pos.key) {
-                  <div class="form-row">
-                    <label class="form-label">{{ pos.label }}</label>
-                    <select class="form-select" [(ngModel)]="form[pos.key]">
-                      <option [ngValue]="0">Selecione</option>
-                      @for (p of pilotosDisponiveis(pos.key); track p.id) {
-                        <option [ngValue]="p.id">{{ p.numero }} — {{ p.nome }} ({{ p.equipe }})</option>
-                      }
-                    </select>
+                  <div class="pos-slot" (click)="abrirModal(pos.key, pos.label)"
+                       [class.filled]="form[pos.key] !== 0">
+                    <div class="ps-num">{{ pos.label }}</div>
+                    @if (form[pos.key] !== 0) {
+                      <div class="ps-name">{{ nomePiloto(form[pos.key]) }}</div>
+                      <div class="ps-team">{{ equipePiloto(form[pos.key]) }}</div>
+                    } @else {
+                      <div class="ps-empty">Selecionar</div>
+                    }
                   </div>
                 }
-
-                <div class="divider"></div>
-
-                <div class="form-row">
-                  <label class="form-label mv">Mel. Volta</label>
-                  <select class="form-select" [(ngModel)]="form['melhorVoltaId']">
-                    <option [ngValue]="0">Selecione a Melhor Volta</option>
-                    @for (p of pilotos(); track p.id) {
-                      <option [ngValue]="p.id">{{ p.numero }} — {{ p.nome }}</option>
-                    }
-                  </select>
-                </div>
-
-                <div class="form-footer">
-                  <span class="form-info">Máximo: <strong>35 pontos</strong></span>
-                  <button class="btn btn-red" (click)="enviar()" [disabled]="enviando()">
-                    {{ enviando() ? 'Enviando...' : 'Enviar Palpite' }}
-                  </button>
-                </div>
-
-                @if (mensagem()) {
-                  <div class="msg" [class.error]="msgErro()">{{ mensagem() }}</div>
-                }
               </div>
+
+              <!-- Specials -->
+              <div class="section-label">Especiais</div>
+              <div class="spec-grid">
+                <div class="spec-slot pole" (click)="abrirModal('poleId', 'Pole Position')"
+                     [class.filled]="form['poleId'] !== 0">
+                  <div class="ss-label">Pole Position</div>
+                  @if (form['poleId'] !== 0) {
+                    <div class="ss-name">{{ nomePiloto(form['poleId']) }}</div>
+                  } @else {
+                    <div class="ss-empty">Selecionar</div>
+                  }
+                </div>
+                <div class="spec-slot mv" (click)="abrirModal('melhorVoltaId', 'Melhor Volta')"
+                     [class.filled]="form['melhorVoltaId'] !== 0">
+                  <div class="ss-label">Melhor Volta</div>
+                  @if (form['melhorVoltaId'] !== 0) {
+                    <div class="ss-name">{{ nomePiloto(form['melhorVoltaId']) }}</div>
+                  } @else {
+                    <div class="ss-empty">Selecionar</div>
+                  }
+                </div>
+              </div>
+
+              @if (mensagem()) {
+                <div class="msg" [class.error]="msgErro()" [class.success]="!msgErro()">{{ mensagem() }}</div>
+              }
             </div>
 
-            <!-- Painel lateral com a lista de pilotos e campo de busca -->
-            <div class="card">
-              <div class="drivers-header">
-                <h4>Grid 2026</h4>
-                <input class="search-input" placeholder="Buscar piloto..." [(ngModel)]="busca">
+            <!-- Sidebar -->
+            <div class="palpite-side">
+              <div class="side-card">
+                <div class="side-head">
+                  <div class="side-title">Progresso</div>
+                  <div class="side-count">{{ preenchidos() }}/12</div>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" [style.width.%]="(preenchidos() / 12) * 100"></div>
+                </div>
+                <div class="side-deadline">
+                  Prazo: {{ proximaEtapa()!.prazoQualify | date:'dd/MM · HH:mm' }}
+                </div>
               </div>
-              <div class="drivers-list">
-                @for (p of pilotosFiltrados(); track p.id) {
-                  <div class="driver-row">
-                    <div class="driver-num">{{ p.numero }}</div>
-                    <div class="team-bar" [style.background]="p.corEquipe"></div>
-                    <div>
-                      <div class="driver-name">{{ p.nome }}</div>
-                      <div class="driver-team">{{ p.equipe }}</div>
-                    </div>
-                  </div>
-                }
+
+              <div class="side-card rules">
+                <div class="side-title">Pontuação</div>
+                <div class="rule">Posição exata: <strong>3 pts</strong></div>
+                <div class="rule">Adjacente (±1): <strong>1 pt</strong></div>
+                <div class="rule">Pole Position: <strong>2 pts</strong></div>
+                <div class="rule">Melhor Volta: <strong>2 pts</strong></div>
+                <div class="rule total">Máximo: <strong>35 pts</strong></div>
               </div>
+
+              <button class="submit-btn" (click)="enviar()" [disabled]="enviando() || preenchidos() < 12">
+                {{ enviando() ? 'Enviando...' : 'Enviar Palpite' }}
+              </button>
             </div>
           </div>
         }
       }
     </div>
+
+    <!-- Driver Picker Modal -->
+    @if (modalAberto()) {
+      <div class="modal-overlay" (click)="fecharModal()"></div>
+      <div class="modal">
+        <div class="modal-head">
+          <div class="modal-title">{{ modalLabel() }}</div>
+          <button class="modal-close" (click)="fecharModal()">✕</button>
+        </div>
+        <div class="modal-search">
+          <input type="text" [(ngModel)]="busca" placeholder="Buscar piloto..." class="modal-input">
+        </div>
+        <div class="modal-list">
+          @for (p of pilotosModal(); track p.id) {
+            <div class="modal-driver" (click)="selecionarPiloto(p.id)">
+              <div class="md-bar" [style.background]="p.corEquipe"></div>
+              <div class="md-num">{{ p.numero }}</div>
+              <div class="md-info">
+                <div class="md-name">{{ p.nome }}</div>
+                <div class="md-team">{{ p.equipe }}</div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
   `,
   styles: [`
-    .bolao-layout { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
-    /* Header escuro F1 */
-    .bolao-header { padding: 16px 20px; border-bottom: none; display: flex; justify-content: space-between; align-items: flex-start; background: #1A1A1A; border-radius: 8px 8px 0 0; }
-    .bolao-header h3 { font-size: 15px; font-weight: 700; margin-bottom: 2px; color: white; }
-    .circuit-name { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
-    .deadline-tag { font-size: 12px; color: white; font-weight: 600; background: rgba(225,6,0,0.8); padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
-    .bolao-form { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-    .form-row { display: grid; grid-template-columns: 80px 1fr; gap: 12px; align-items: center; }
-    .form-label { font-size: 12px; font-weight: 700; color: white; text-align: center; background: #6B6B6B; padding: 4px 8px; border-radius: 4px; }
-    .form-label.pole { background: linear-gradient(135deg, #E5A800, #FFD700); color: #1A1A1A; } .form-label.mv { background: linear-gradient(135deg, #16A34A, #22C55E); color: white; }
-    .form-select { width: 100%; padding: 9px 12px; background: white; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 13px; }
-    .form-select:focus { outline: none; border-color: #E10600; box-shadow: 0 0 0 2px rgba(225,6,0,0.1); }
-    .divider { height: 1px; background: #E0E0E0; margin: 4px 0; }
-    .form-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #E0E0E0; }
-    .form-info { font-size: 12px; color: #6B6B6B; }
-    .msg { margin-top: 8px; padding: 10px 14px; border-radius: 6px; font-size: 13px; background: #dcfce7; color: #166534; }
-    .msg.error { background: #fee2e2; color: #991b1b; }
-    /* Sidebar pilotos — escura */
-    .drivers-header { padding: 14px 16px; border-bottom: none; background: #1A1A1A; border-radius: 8px 8px 0 0; }
-    .drivers-header h4 { font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; margin-bottom: 8px; color: white; letter-spacing: 1px; text-transform: uppercase; }
-    .search-input { width: 100%; padding: 7px 10px; border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; font-size: 13px; background: rgba(255,255,255,0.08); color: white; }
-    .search-input::placeholder { color: rgba(255,255,255,0.35); }
-    .drivers-list { max-height: 560px; overflow-y: auto; }
-    .driver-row { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid #E0E0E0; font-size: 13px; }
-    .driver-num { font-family: 'Orbitron', monospace; font-weight: 700; color: #E10600; min-width: 28px; font-size: 12px; }
-    .team-bar { width: 3px; height: 20px; border-radius: 2px; flex-shrink: 0; }
-    .driver-name { font-weight: 500; }
-    .driver-team { font-size: 11px; color: #6B6B6B; }
-    .loading, .empty { text-align: center; padding: 40px; color: #6B6B6B; }
-    @media (max-width: 768px) { .bolao-layout { grid-template-columns: 1fr; } }
-    /* Tela de confirmação */
-    .confirmacao-card { max-width: 540px; }
-    .conf-header { padding: 16px 20px; border-bottom: none; background: #1A1A1A; border-radius: 8px 8px 0 0; }
-    .conf-title { font-size: 16px; font-weight: 700; color: white; }
-    .conf-sub { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
-    .conf-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 8px; }
-    .conf-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #F5F5F5; border-radius: 6px; }
-    .conf-item.pole { border-left: 3px solid #E5A800; }
-    .conf-item.mv   { border-left: 3px solid #16A34A; }
-    .conf-label { font-size: 12px; font-weight: 600; color: #6B6B6B; min-width: 80px; }
-    .conf-value { font-size: 13px; font-weight: 600; }
-    .conf-footer { padding: 16px 20px; border-top: 1px solid #E0E0E0; }
-    .btn-outline { background: white; border: 1px solid #0057E1; color: #0057E1; padding: 9px 18px; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; }
-    .btn-outline:hover { background: rgba(0,87,225,0.05); }
+    .palpite-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 32px; }
+
+    .palpite-layout { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
+    .palpite-main { min-width: 0; }
+
+    /* GP Header */
+    .gp-header { margin-bottom: 32px; }
+    .gp-chip {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 8px 16px; background: var(--s2); border: 1.5px solid var(--b2);
+      font-size: var(--sz-sm); font-weight: 600; color: var(--w70);
+      margin-bottom: 16px;
+    }
+    .gp-name {
+      font-family: var(--font-display); font-style: italic; font-weight: 800;
+      font-size: var(--sz-2xl); text-transform: uppercase; line-height: 1;
+    }
+    .gp-circuit { font-size: var(--sz-base); color: var(--w45); margin-top: 6px; }
+
+    .section-label {
+      font-family: var(--font-orb); font-size: var(--sz-xs); font-weight: 700;
+      text-transform: uppercase; letter-spacing: 2px; color: var(--red);
+      margin-bottom: 12px; border-left: 3px solid var(--red); padding-left: 10px;
+    }
+
+    /* Position Grid */
+    .pos-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;
+      margin-bottom: 28px;
+    }
+    .pos-slot {
+      background: var(--s1); border: 1.5px solid var(--b1);
+      padding: 16px 12px; cursor: pointer; transition: all .15s;
+      text-align: center;
+    }
+    .pos-slot:hover { background: var(--s2); border-color: var(--b3); }
+    .pos-slot.filled { border-color: var(--red); background: rgba(232,0,26,.04); }
+    .ps-num {
+      font-family: var(--font-orb); font-size: var(--sz-lg); font-weight: 900;
+      color: var(--w45); margin-bottom: 8px;
+    }
+    .pos-slot.filled .ps-num { color: var(--red); }
+    .ps-name { font-family: var(--font-display); font-weight: 700; font-size: var(--sz-sm); text-transform: uppercase; }
+    .ps-team { font-size: 11px; color: var(--w45); margin-top: 2px; }
+    .ps-empty { font-size: var(--sz-sm); color: var(--w20); }
+
+    /* Specials */
+    .spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-bottom: 24px; }
+    .spec-slot {
+      background: var(--s1); border: 1.5px solid var(--b1);
+      padding: 20px; cursor: pointer; transition: all .15s;
+    }
+    .spec-slot:hover { background: var(--s2); }
+    .spec-slot.filled { border-color: var(--b3); }
+    .spec-slot.pole.filled { border-color: var(--gold); background: rgba(240,192,64,.04); }
+    .spec-slot.mv.filled { border-color: var(--green); background: rgba(0,230,118,.04); }
+    .ss-label {
+      font-size: var(--sz-xs); font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--w45); margin-bottom: 8px;
+    }
+    .spec-slot.pole .ss-label { color: var(--gold); }
+    .spec-slot.mv .ss-label { color: var(--green); }
+    .ss-name { font-family: var(--font-display); font-weight: 700; font-size: var(--sz-lg); text-transform: uppercase; }
+    .ss-empty { font-size: var(--sz-base); color: var(--w20); }
+
+    /* Sidebar */
+    .palpite-side { display: flex; flex-direction: column; gap: 16px; }
+    .side-card {
+      background: var(--s1); border: 1.5px solid var(--b1); padding: 20px;
+    }
+    .side-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .side-title {
+      font-family: var(--font-orb); font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 2px; color: var(--red);
+    }
+    .side-count { font-family: var(--font-orb); font-size: var(--sz-lg); font-weight: 900; }
+    .progress-bar { height: 6px; background: var(--s3); overflow: hidden; margin-bottom: 16px; }
+    .progress-fill { height: 100%; background: var(--red); transition: width .3s; }
+    .side-deadline { font-size: var(--sz-sm); color: var(--amber); font-weight: 600; }
+
+    .rules { display: flex; flex-direction: column; gap: 8px; }
+    .rule { font-size: var(--sz-sm); color: var(--w70); }
+    .rule strong { color: var(--white); }
+    .rule.total { border-top: 1px solid var(--b1); padding-top: 8px; margin-top: 4px; }
+
+    .submit-btn {
+      width: 100%; padding: 18px;
+      font-family: var(--font-body); font-size: var(--sz-base); font-weight: 700;
+      background: var(--red); border: 2px solid var(--red); color: #fff;
+      cursor: pointer; transition: all .2s; letter-spacing: .5px;
+    }
+    .submit-btn:hover:not(:disabled) { background: transparent; color: var(--red); }
+    .submit-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 200; }
+    .modal {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 420px; max-width: 95vw; max-height: 80vh;
+      background: var(--s1); border: 1.5px solid var(--b2);
+      z-index: 201; display: flex; flex-direction: column;
+    }
+    .modal-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 20px; background: var(--s2); border-bottom: 1px solid var(--b1);
+    }
+    .modal-title {
+      font-family: var(--font-display); font-weight: 700; font-size: var(--sz-lg);
+      text-transform: uppercase;
+    }
+    .modal-close {
+      background: none; border: none; color: var(--w45); font-size: 18px;
+      cursor: pointer; padding: 4px 8px;
+    }
+    .modal-close:hover { color: var(--white); }
+    .modal-search { padding: 12px 20px; border-bottom: 1px solid var(--b1); }
+    .modal-input {
+      width: 100%; padding: 12px 14px;
+      background: var(--s2); border: 1.5px solid var(--b2);
+      color: var(--white); font-size: var(--sz-base); font-family: var(--font-body);
+      outline: none;
+    }
+    .modal-input:focus { border-color: var(--red); }
+    .modal-input::placeholder { color: var(--w20); }
+    .modal-list { flex: 1; overflow-y: auto; }
+    .modal-driver {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 20px; border-bottom: 1px solid var(--b1);
+      cursor: pointer; transition: background .1s;
+    }
+    .modal-driver:hover { background: var(--s2); }
+    .md-bar { width: 4px; height: 28px; flex-shrink: 0; }
+    .md-num {
+      font-family: var(--font-orb); font-size: var(--sz-sm); font-weight: 700;
+      color: var(--red); min-width: 32px;
+    }
+    .md-name { font-family: var(--font-display); font-weight: 700; font-size: var(--sz-base); text-transform: uppercase; }
+    .md-team { font-size: var(--sz-sm); color: var(--w45); }
+
+    /* Confirmation */
+    .conf-layout { display: flex; justify-content: center; }
+    .conf-card { max-width: 540px; width: 100%; background: var(--s1); border: 1.5px solid var(--b2); }
+    .conf-head {
+      padding: 24px; text-align: center; background: var(--s2);
+      border-bottom: 1px solid var(--b1);
+    }
+    .conf-icon { font-size: 40px; color: var(--green); margin-bottom: 8px; }
+    .conf-title { font-family: var(--font-display); font-weight: 700; font-size: var(--sz-xl); text-transform: uppercase; }
+    .conf-sub { font-size: var(--sz-sm); color: var(--w45); margin-top: 4px; }
+    .conf-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 4px; }
+    .conf-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 14px; background: var(--s2); border-left: 3px solid transparent;
+    }
+    .conf-item.pole { border-left-color: var(--gold); }
+    .conf-item.mv { border-left-color: var(--green); }
+    .conf-label { font-size: var(--sz-sm); font-weight: 600; color: var(--w45); }
+    .conf-value { font-size: var(--sz-sm); font-weight: 700; }
+    .conf-footer { padding: 16px 20px; border-top: 1px solid var(--b1); }
+
+    .loading, .empty-msg { text-align: center; padding: 60px 20px; color: var(--w45); }
+
+    @media (max-width: 768px) {
+      .palpite-wrap { padding: 24px 16px; }
+      .palpite-layout { grid-template-columns: 1fr; }
+      .pos-grid { grid-template-columns: repeat(2, 1fr); }
+      .modal { width: 100%; max-width: 100%; top: 0; left: 0; transform: none; max-height: 100vh; }
+    }
   `]
 })
 export class PalpiteComponent implements OnInit {
@@ -221,8 +354,13 @@ export class PalpiteComponent implements OnInit {
   enviando         = signal(false);
   mensagem         = signal('');
   msgErro          = signal(false);
-  busca            = '';
   palpiteConfirmado = signal<PalpiteConfirmado | null>(null);
+
+  // Modal state
+  modalAberto = signal(false);
+  modalChave  = signal('');
+  modalLabel  = signal('');
+  busca       = '';
 
   form: Record<string, number> = {
     poleId: 0, pos1Id: 0, pos2Id: 0, pos3Id: 0, pos4Id: 0,
@@ -246,25 +384,53 @@ export class PalpiteComponent implements OnInit {
     });
   }
 
-  pilotosDisponiveis(chaveAtual: string): Piloto[] {
-    const selecionados = Object.entries(this.form)
-      .filter(([k, v]) => k !== chaveAtual && k.startsWith('pos') && v !== 0)
-      .map(([, v]) => v);
-    return this.pilotos().filter(p => !selecionados.includes(p.id));
+  preenchidos(): number {
+    return Object.values(this.form).filter(v => v !== 0).length;
   }
 
-  pilotosFiltrados(): Piloto[] {
-    if (!this.busca) return this.pilotos();
-    const b = this.busca.toLowerCase();
-    return this.pilotos().filter(p =>
-      p.nome.toLowerCase().includes(b) || p.equipe.toLowerCase().includes(b)
-    );
+  nomePiloto(id: number): string {
+    return this.pilotos().find(p => p.id === id)?.nome ?? '—';
   }
 
-  /** Resolve o ID de um piloto para o seu nome exibível */
-  private nomePiloto(id: number): string {
-    const p = this.pilotos().find(x => x.id === id);
-    return p ? `${p.numero} — ${p.nome}` : '—';
+  equipePiloto(id: number): string {
+    return this.pilotos().find(p => p.id === id)?.equipe ?? '';
+  }
+
+  // Modal
+  abrirModal(chave: string, label: string) {
+    this.modalChave.set(chave);
+    this.modalLabel.set(label);
+    this.busca = '';
+    this.modalAberto.set(true);
+  }
+
+  fecharModal() { this.modalAberto.set(false); }
+
+  pilotosModal(): Piloto[] {
+    const chave = this.modalChave();
+    let lista = this.pilotos();
+
+    // Para posições, filtrar pilotos já selecionados em outras posições
+    if (chave.startsWith('pos')) {
+      const selecionados = Object.entries(this.form)
+        .filter(([k, v]) => k !== chave && k.startsWith('pos') && v !== 0)
+        .map(([, v]) => v);
+      lista = lista.filter(p => !selecionados.includes(p.id));
+    }
+
+    if (this.busca) {
+      const b = this.busca.toLowerCase();
+      lista = lista.filter(p =>
+        p.nome.toLowerCase().includes(b) || p.equipe.toLowerCase().includes(b)
+      );
+    }
+
+    return lista;
+  }
+
+  selecionarPiloto(id: number) {
+    this.form[this.modalChave()] = id;
+    this.fecharModal();
   }
 
   enviar() {
@@ -291,7 +457,6 @@ export class PalpiteComponent implements OnInit {
     this.api.enviarPalpite(req).subscribe({
       next: () => {
         this.enviando.set(false);
-        // Monta a tela de confirmação com os nomes dos pilotos escolhidos
         this.palpiteConfirmado.set({
           etapaNome:   etapa.nome,
           circuito:    etapa.circuito,
@@ -304,7 +469,6 @@ export class PalpiteComponent implements OnInit {
     });
   }
 
-  /** Volta para o formulário para editar o palpite */
   editarPalpite() {
     this.palpiteConfirmado.set(null);
     this.mensagem.set('');

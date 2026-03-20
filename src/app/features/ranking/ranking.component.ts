@@ -1,14 +1,3 @@
-// ============================================================
-// COMPONENTE: RankingComponent
-// ============================================================
-// Responsável pela página de ranking geral (/ranking).
-// Exibe a tabela de classificação do campeonato com todos
-// os participantes ordenados por pontuação total.
-//
-// Ao clicar em um participante, abre um painel lateral (drawer)
-// com o histórico de pontos por corrida.
-// ============================================================
-
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -20,64 +9,105 @@ import { RankingItem, HistoricoEtapa } from '../../core/models';
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="page">
-      <div class="section-head">
-        <h2>Ranking — CV2026</h2>
-        @if (ultimoGp()) {
-          <p>Classificação geral atualizada após o <strong>{{ ultimoGp() }}</strong>.</p>
-        } @else {
-          <p>Classificação geral atualizada após cada Grande Prêmio.</p>
-        }
+    <div class="ranking-wrap">
+      <div class="page-header">
+        <div>
+          <div class="ph-eyebrow">Classificação Geral</div>
+          <h1 class="ph-title">RANKING</h1>
+          @if (ultimoGp()) {
+            <div class="ph-sub">Atualizado após o {{ ultimoGp() }}</div>
+          } @else {
+            <div class="ph-sub">Atualizado após cada Grande Prêmio</div>
+          }
+        </div>
+        <div class="ph-right">
+          <div class="ph-badge">CV<span>2026</span></div>
+          <div class="ph-meta">30 etapas · 35 pts máx</div>
+        </div>
       </div>
 
       @if (loading()) {
         <div class="loading">Carregando...</div>
       } @else if (ranking().length === 0) {
-        <div class="card empty">Nenhum resultado ainda. Aguarde o primeiro GP! 🏁</div>
+        <div class="card empty">Nenhum resultado ainda. Aguarde o primeiro GP!</div>
       } @else {
-        <div class="card">
-          <div class="card-toolbar">
-            <a routerLink="/palpites" class="link-apostas">Ver apostas detalhadas →</a>
+        <!-- Podium -->
+        @if (ranking().length >= 3) {
+          <div class="podium">
+            <div class="pod-card g2" (click)="abrirHistorico(ranking()[1])">
+              <span class="pod-badge s">2</span>
+              <div class="pod-name">{{ ranking()[1].nome }}</div>
+              <div class="pod-handle">{{ ranking()[1].login }}</div>
+              <div class="pod-pts s">{{ ranking()[1].totalPontos }}</div>
+              <div class="pod-pts-lbl">Pontos</div>
+              <div class="pod-stats">
+                {{ ranking()[1].acertosExatos }} exatos · {{ ranking()[1].acertosPole }} poles · {{ ranking()[1].acertosMelhorVolta }} MV
+              </div>
+            </div>
+            <div class="pod-card g1" (click)="abrirHistorico(ranking()[0])">
+              <span class="pod-badge g">1</span>
+              <div class="pod-name">{{ ranking()[0].nome }}</div>
+              <div class="pod-handle">{{ ranking()[0].login }}</div>
+              <div class="pod-pts g">{{ ranking()[0].totalPontos }}</div>
+              <div class="pod-pts-lbl">Pontos</div>
+              <div class="pod-stats">
+                {{ ranking()[0].acertosExatos }} exatos · {{ ranking()[0].acertosPole }} poles · {{ ranking()[0].acertosMelhorVolta }} MV
+              </div>
+            </div>
+            <div class="pod-card g3" (click)="abrirHistorico(ranking()[2])">
+              <span class="pod-badge b">3</span>
+              <div class="pod-name">{{ ranking()[2].nome }}</div>
+              <div class="pod-handle">{{ ranking()[2].login }}</div>
+              <div class="pod-pts b">{{ ranking()[2].totalPontos }}</div>
+              <div class="pod-pts-lbl">Pontos</div>
+              <div class="pod-stats">
+                {{ ranking()[2].acertosExatos }} exatos · {{ ranking()[2].acertosPole }} poles · {{ ranking()[2].acertosMelhorVolta }} MV
+              </div>
+            </div>
           </div>
-          <table class="rank-table">
-            <thead>
-              <tr>
-                <th>Pos</th>
-                <th>Participante</th>
-                <th>Etapas</th>
-                <th>Acertos</th>
-                <th>Pontos</th>
+        }
+
+        <!-- Table -->
+        <table class="rank-table">
+          <thead>
+            <tr>
+              <th>Pos</th>
+              <th>Participante</th>
+              <th>Etapas</th>
+              <th>Acertos</th>
+              <th>Pontos</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of ranking(); track item.usuarioId) {
+              <tr (click)="abrirHistorico(item)"
+                  [class.row-active]="selecionado()?.usuarioId === item.usuarioId">
+                <td><span class="td-posnum">{{ item.posicao }}°</span></td>
+                <td>
+                  <div class="td-name">{{ item.nome }}</div>
+                  <div class="td-handle">{{ item.login }}</div>
+                </td>
+                <td class="td-data">{{ item.etapasParticipadas }} / 30</td>
+                <td class="td-data">{{ item.acertosExatos }} exatos · {{ item.acertosPole }} poles · {{ item.acertosMelhorVolta }} MV</td>
+                <td><span class="td-pts">{{ item.totalPontos }}</span></td>
               </tr>
-            </thead>
-            <tbody>
-              @for (item of ranking(); track item.usuarioId) {
-                <!-- Linha clicável: abre o drawer com o histórico do participante -->
-                <tr class="row-click" (click)="abrirHistorico(item)"
-                    [class.row-active]="selecionado()?.usuarioId === item.usuarioId">
-                  <td><span class="pos" [class.p1]="item.posicao===1" [class.p2]="item.posicao===2" [class.p3]="item.posicao===3">{{ item.posicao }}°</span></td>
-                  <td>
-                    <div class="name">{{ item.login }}</div>
-                    <div class="hint">clique para ver histórico</div>
-                  </td>
-                  <td class="muted">{{ item.etapasParticipadas }} / 30</td>
-                  <td class="muted">{{ item.acertosExatos }} exatos · {{ item.acertosPole }} poles · {{ item.acertosMelhorVolta }} MV</td>
-                  <td class="pts">{{ item.totalPontos }} pts</td>
-                </tr>
-              }
-            </tbody>
-          </table>
+            }
+          </tbody>
+        </table>
+
+        <div class="ver-apostas">
+          <a routerLink="/palpites" class="btn-outline">Ver apostas detalhadas →</a>
         </div>
       }
     </div>
 
-    <!-- ===== DRAWER: Histórico por corrida ===== -->
+    <!-- Drawer -->
     @if (selecionado()) {
-      <!-- Overlay escuro fecha o drawer ao clicar fora -->
       <div class="overlay" (click)="fecharHistorico()"></div>
       <div class="drawer">
         <div class="drawer-header">
           <div>
-            <div class="drawer-title">{{ selecionado()!.login }}</div>
+            <div class="drawer-title">{{ selecionado()!.nome }}</div>
             <div class="drawer-sub">{{ selecionado()!.posicao }}° no geral · {{ selecionado()!.totalPontos }} pts</div>
           </div>
           <button class="btn-close" (click)="fecharHistorico()">✕</button>
@@ -95,7 +125,6 @@ import { RankingItem, HistoricoEtapa } from '../../core/models';
                   <span class="hist-etapa">{{ h.etapaNumero }}. {{ h.etapaNome }}</span>
                   <span class="hist-pts">{{ h.pontos }} pts</span>
                 </div>
-                <!-- Barra proporcional: 35 pts = 100% -->
                 <div class="hist-bar-bg">
                   <div class="hist-bar"
                        [style.width.%]="(h.pontos / 35) * 100"
@@ -106,8 +135,8 @@ import { RankingItem, HistoricoEtapa } from '../../core/models';
                   </div>
                 </div>
                 <div class="hist-badges">
-                  @if (h.acertouPole)        { <span class="badge pole">Pole ✓</span> }
-                  @if (h.acertouMelhorVolta) { <span class="badge mv">MV ✓</span> }
+                  @if (h.acertouPole)        { <span class="badge pole">Pole</span> }
+                  @if (h.acertouMelhorVolta) { <span class="badge mv">MV</span> }
                   @if (h.acertosExatos > 0)  { <span class="badge exato">{{ h.acertosExatos }} exatos</span> }
                 </div>
               </div>
@@ -118,58 +147,111 @@ import { RankingItem, HistoricoEtapa } from '../../core/models';
     }
   `,
   styles: [`
-    /* Tabela */
-    .rank-table { width: 100%; border-collapse: collapse; }
-    .rank-table th { font-size: 11px; font-weight: 600; color: #6B6B6B; text-transform: uppercase; letter-spacing: 1px; padding: 12px 16px; text-align: left; border-bottom: 2px solid #E10600; background: #FAFAFA; }
-    .rank-table td { padding: 12px 16px; border-bottom: 1px solid #E0E0E0; font-size: 14px; }
-    .rank-table tr:last-child td { border-bottom: none; }
-    .row-click { cursor: pointer; transition: background 0.1s; }
-    .row-click:hover { background: #F5F7FF; }
-    .row-active { background: #EEF3FF !important; }
-    .pos { display: inline-flex; align-items: center; justify-content: center; font-weight: 700; color: #6B6B6B; font-size: 13px; width: 32px; height: 32px; border-radius: 50%; }
-    .pos.p1 { background: linear-gradient(135deg, #FFD700, #E5A800); color: #1A1A1A; font-size: 14px; box-shadow: 0 2px 8px rgba(229,168,0,0.3); }
-    .pos.p2 { background: linear-gradient(135deg, #E0E0E0, #B0B0B0); color: #1A1A1A; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    .pos.p3 { background: linear-gradient(135deg, #CD7F32, #A0522D); color: white; font-size: 14px; box-shadow: 0 2px 6px rgba(160,82,45,0.3); }
-    .name { font-weight: 600; }
-    .hint { font-size: 11px; color: #BDBDBD; }
-    .muted { font-size: 13px; color: #6B6B6B; }
-    .pts { font-weight: 700; }
-    .loading, .empty { text-align: center; padding: 40px; color: #6B6B6B; }
-    .card-toolbar { padding: 10px 16px; border-bottom: 1px solid #E0E0E0; text-align: right; }
-    .link-apostas { font-size: 13px; color: #0057E1; text-decoration: none; font-weight: 600; }
-    .link-apostas:hover { text-decoration: underline; }
+    .ranking-wrap { max-width: 1100px; margin: 0 auto; padding: 48px 32px; }
 
-    /* Overlay */
-    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.25); z-index: 100; }
+    /* Podium */
+    .podium { display: grid; grid-template-columns: 1fr 1.1fr 1fr; gap: 2px; margin-bottom: 2px; }
+    .pod-card {
+      padding: 24px 20px; border: 1.5px solid var(--b1);
+      position: relative; overflow: hidden; background: var(--s1);
+      transition: background .2s; cursor: pointer;
+    }
+    .pod-card:hover { background: var(--s2); }
+    .pod-card.g1 { border-color: rgba(240,192,64,.3); background: rgba(240,192,64,.04); }
+    .pod-card.g1::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--gold); }
+    .pod-card.g2 { background: rgba(184,184,200,.03); }
+    .pod-card.g2::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--silver); }
+    .pod-card.g3 { background: rgba(200,120,64,.03); }
+    .pod-card.g3::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--bronze); }
+    .pod-badge {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: var(--font-orb); font-size: 14px; font-weight: 900; margin-bottom: 14px;
+    }
+    .pod-badge.g { background: var(--gold); color: #000; }
+    .pod-badge.s { background: var(--silver); color: #000; }
+    .pod-badge.b { background: var(--bronze); color: #000; }
+    .pod-name { font-family: var(--font-display); font-weight: 700; font-size: var(--sz-xl); text-transform: uppercase; }
+    .pod-handle { font-size: var(--sz-sm); color: var(--w45); margin: 3px 0 16px; }
+    .pod-pts { font-family: var(--font-orb); font-size: 40px; font-weight: 900; line-height: 1; }
+    .pod-pts.g { color: var(--gold); }
+    .pod-pts.s { color: var(--silver); }
+    .pod-pts.b { color: var(--bronze); }
+    .pod-pts-lbl { font-size: var(--sz-sm); font-weight: 600; color: var(--w45); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+    .pod-stats { font-size: var(--sz-sm); color: var(--w45); margin-top: 14px; line-height: 2; }
 
-    /* Drawer deslizante */
-    .drawer { position: fixed; top: 0; right: 0; height: 100vh; width: 360px; max-width: 90vw; background: white; box-shadow: -4px 0 24px rgba(0,0,0,0.12); z-index: 101; display: flex; flex-direction: column; animation: slideIn 0.2s ease; border-left: 3px solid #E10600; }
+    /* Table */
+    .rank-table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--b1); }
+    .rank-table thead { background: var(--s2); border-bottom: 1px solid var(--b2); }
+    .rank-table th {
+      font-size: var(--sz-sm); font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.5px; color: var(--w45); padding: 13px 18px; text-align: left;
+    }
+    .rank-table tbody tr {
+      border-bottom: 1px solid var(--b1); cursor: pointer; transition: background .15s;
+    }
+    .rank-table tbody tr:hover { background: var(--s2); }
+    .row-active { background: var(--s2) !important; }
+    .rank-table td { padding: 16px 18px; vertical-align: middle; }
+    .td-posnum { font-family: var(--font-orb); font-size: var(--sz-base); font-weight: 700; color: var(--w45); }
+    .rank-table tbody tr:hover .td-posnum { color: var(--red); }
+    .td-name { font-family: var(--font-display); font-size: var(--sz-lg); font-weight: 700; text-transform: uppercase; }
+    .td-handle { font-size: var(--sz-sm); color: var(--w45); }
+    .td-data { font-size: var(--sz-base); color: var(--w70); }
+    .td-pts { font-family: var(--font-orb); font-size: var(--sz-lg); font-weight: 700; }
+
+    .ver-apostas { margin-top: 24px; text-align: center; }
+
+    .loading, .empty { text-align: center; padding: 40px; color: var(--w45); }
+
+    /* Overlay + Drawer */
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 100; }
+    .drawer {
+      position: fixed; top: 0; right: 0; height: 100vh; width: 380px; max-width: 90vw;
+      background: var(--s1); border-left: 2px solid var(--red);
+      z-index: 101; display: flex; flex-direction: column;
+      animation: slideIn .2s ease;
+    }
     @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    .drawer-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 20px; border-bottom: none; background: #1A1A1A; }
-    .drawer-title { font-size: 18px; font-weight: 700; color: white; }
-    .drawer-sub { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 2px; }
-    .btn-close { background: none; border: none; font-size: 18px; color: rgba(255,255,255,0.6); cursor: pointer; padding: 4px 8px; border-radius: 4px; line-height: 1; }
-    .btn-close:hover { background: rgba(255,255,255,0.1); color: white; }
+    .drawer-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 20px; background: var(--s2); border-bottom: 1px solid var(--b1);
+    }
+    .drawer-title { font-family: var(--font-display); font-size: var(--sz-lg); font-weight: 700; text-transform: uppercase; }
+    .drawer-sub { font-size: var(--sz-sm); color: var(--w45); margin-top: 4px; }
+    .btn-close {
+      background: none; border: none; font-size: 18px; color: var(--w45);
+      cursor: pointer; padding: 4px 8px; line-height: 1;
+    }
+    .btn-close:hover { color: var(--white); }
     .drawer-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
 
-    /* Itens do histórico */
-    .hist-loading, .hist-vazio { text-align: center; padding: 40px; color: #6B6B6B; font-size: 13px; }
+    .hist-loading, .hist-vazio { text-align: center; padding: 40px; color: var(--w45); font-size: var(--sz-sm); }
     .hist-item { display: flex; flex-direction: column; gap: 5px; }
     .hist-meta { display: flex; justify-content: space-between; align-items: baseline; }
-    .hist-etapa { font-size: 12px; font-weight: 500; color: #1A1A1A; }
-    .hist-pts { font-size: 15px; font-weight: 700; color: #0057E1; white-space: nowrap; }
-    .hist-bar-bg { height: 8px; background: #F0F0F0; border-radius: 4px; overflow: hidden; }
-    .hist-bar { height: 100%; border-radius: 4px; min-width: 4px; transition: width 0.4s ease; }
+    .hist-etapa { font-size: var(--sz-sm); font-weight: 500; color: var(--w70); }
+    .hist-pts { font-size: var(--sz-base); font-weight: 700; color: var(--red); white-space: nowrap; }
+    .hist-bar-bg { height: 8px; background: var(--s3); border-radius: 4px; overflow: hidden; }
+    .hist-bar { height: 100%; border-radius: 4px; min-width: 4px; transition: width .4s ease; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     .hist-bar.bar-full { background: linear-gradient(90deg, #E5A800, #FFD700, #E5A800); background-size: 200% 100%; animation: shimmer 3s infinite; }
-    .hist-bar.bar-good { background: #16A34A; }
-    .hist-bar.bar-mid  { background: #0057E1; }
-    .hist-bar.bar-low  { background: #9E9E9E; }
+    .hist-bar.bar-good { background: var(--green); }
+    .hist-bar.bar-mid  { background: var(--amber); }
+    .hist-bar.bar-low  { background: var(--w45); }
     .hist-badges { display: flex; gap: 4px; flex-wrap: wrap; }
-    .badge { font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 8px; }
-    .badge.pole  { background: rgba(229,168,0,0.15); color: #996F00; }
-    .badge.mv    { background: #dcfce7; color: #166534; }
-    .badge.exato { background: rgba(0,87,225,0.1); color: #0057E1; }
+    .badge {
+      font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 8px;
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .badge.pole  { background: rgba(240,192,64,.15); color: var(--gold); }
+    .badge.mv    { background: rgba(0,230,118,.12); color: var(--green); }
+    .badge.exato { background: rgba(232,0,26,.12); color: var(--red); }
+
+    @media (max-width: 768px) {
+      .ranking-wrap { padding: 24px 16px; }
+      .podium { grid-template-columns: 1fr; }
+      .rank-table th:nth-child(4), .rank-table td:nth-child(4) { display: none; }
+    }
   `]
 })
 export class RankingComponent implements OnInit {
@@ -194,7 +276,6 @@ export class RankingComponent implements OnInit {
   }
 
   abrirHistorico(item: RankingItem) {
-    // Clique no mesmo participante fecha o drawer
     if (this.selecionado()?.usuarioId === item.usuarioId) {
       this.fecharHistorico();
       return;

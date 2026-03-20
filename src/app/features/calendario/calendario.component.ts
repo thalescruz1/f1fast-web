@@ -1,14 +1,3 @@
-// ============================================================
-// COMPONENTE: CalendarioComponent
-// ============================================================
-// Responsável pela página de calendário (/calendario).
-// Exibe todos os 30 GPs da temporada 2026 em cards.
-//
-// Modificação: cada card agora tem link para os detalhes da
-// etapa (/etapa/:id) com horários, localização, recordista,
-// distância e tipo de pista.
-// ============================================================
-
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -20,10 +9,17 @@ import { Etapa } from '../../core/models';
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="page">
-      <div class="section-head">
-        <h2>Calendário 2026</h2>
-        <p>30 etapas · Corridas Sprint marcadas em amarelo.</p>
+    <div class="cal-wrap">
+      <div class="page-header">
+        <div>
+          <div class="ph-eyebrow">Temporada</div>
+          <h1 class="ph-title">CALENDÁRIO</h1>
+          <div class="ph-sub">30 etapas · Corridas Sprint marcadas em amarelo</div>
+        </div>
+        <div class="ph-right">
+          <div class="ph-badge">CV<span>2026</span></div>
+          <div class="ph-meta">Mar — Dez 2026</div>
+        </div>
       </div>
 
       @if (loading()) {
@@ -31,31 +27,38 @@ import { Etapa } from '../../core/models';
       } @else {
         <div class="cal-grid">
           @for (e of etapas(); track e.id) {
-            <div class="cal-item"
-               [class.next]="isProxima(e)"
-               [class.sprint]="e.sprint"
-               [class.done]="e.encerrada">
+            <div class="cal-card"
+                 [class.is-next]="isProxima(e)"
+                 [class.is-done]="e.encerrada"
+                 [class.is-sprint]="e.sprint">
 
-              <div class="cal-top">
-                <span class="cal-num">Etapa {{ e.numero }}</span>
-                @if (isProxima(e)) { <span class="cal-tag next">Próximo</span> }
-                @else if (e.sprint) { <span class="cal-tag sprint">Sprint</span> }
-                @else if (e.encerrada) { <span class="cal-tag done">Encerrado</span> }
+              <div class="cc-head">
+                <span class="cc-num">R{{ e.numero }}</span>
+                @if (isProxima(e)) {
+                  <span class="cc-badge next"><span class="ldot"></span> Próxima</span>
+                } @else if (e.encerrada) {
+                  <span class="cc-badge done">Encerrada</span>
+                } @else if (e.sprint) {
+                  <span class="cc-badge sprint">Sprint</span>
+                }
               </div>
 
-              <div class="cal-flag">{{ e.pais }}</div>
-              <div class="cal-name">{{ e.nome }}</div>
-              <div class="cal-circuit">{{ e.circuito }}</div>
-              <div class="cal-date">
-                <strong>{{ e.dataCorrida | date:'dd MMM' }}</strong>
-                · {{ e.dataCorrida | date:'HH:mm' }}
+              <div class="cc-flag">{{ e.pais }}</div>
+              <div class="cc-name">{{ e.nome }}</div>
+              <div class="cc-circuit">{{ e.circuito }}</div>
+
+              <div class="cc-date">
+                <span class="cc-date-day">{{ e.dataCorrida | date:'dd MMM' }}</span>
+                <span class="cc-date-time">{{ e.dataCorrida | date:'HH:mm' }}</span>
               </div>
 
-              <!-- Links de ação: detalhes sempre disponível; apostas só após encerrar -->
-              <div class="cal-links">
-                <a [routerLink]="['/etapa', e.id]" class="cal-link">Detalhes →</a>
+              <div class="cc-actions">
+                <a [routerLink]="['/etapa', e.id]" class="cc-link">Ver Detalhes →</a>
+                @if (!e.encerrada && !e.prazoExpirado) {
+                  <a routerLink="/palpite" class="cc-link palpite">Fazer Palpite</a>
+                }
                 @if (e.encerrada) {
-                  <a [routerLink]="['/palpites', e.id]" class="cal-link">Apostas →</a>
+                  <a [routerLink]="['/palpites', e.id]" class="cc-link">Apostas →</a>
                 }
               </div>
             </div>
@@ -65,31 +68,62 @@ import { Etapa } from '../../core/models';
     </div>
   `,
   styles: [`
-    .cal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
-    .cal-item { background: white; border: 1px solid #E0E0E0; border-radius: 8px; padding: 16px; cursor: default; transition: all 0.2s; color: inherit; display: flex; flex-direction: column; }
-    .cal-item:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-    .cal-item.next { border-left: 3px solid #E10600; border-top: 3px solid #E10600; background: linear-gradient(135deg, rgba(225,6,0,0.03) 0%, white 40%); }
-    .cal-item.sprint { border-left: 3px solid #E5A800; }
-    .cal-item.done { opacity: 0.65; }
-    .cal-item.done:hover { transform: none; box-shadow: none; }
-    .cal-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-    .cal-num { font-size: 11px; color: #6B6B6B; font-weight: 500; }
-    .cal-tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; text-transform: uppercase; }
-    .cal-tag.sprint { background: rgba(229,168,0,0.12); color: #996F00; }
-    .cal-tag.next { background: rgba(225,6,0,0.1); color: #E10600; display: flex; align-items: center; gap: 4px; }
-    .cal-tag.next::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #E10600; animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-    .cal-tag.done { background: rgba(0,0,0,0.06); color: #6B6B6B; }
-    .cal-flag { font-size: 24px; margin-bottom: 6px; }
-    .cal-name { font-size: 14px; font-weight: 700; }
-    .cal-circuit { font-size: 12px; color: #6B6B6B; margin-bottom: 6px; }
-    .cal-date { font-size: 12px; color: #6B6B6B; flex: 1; }
-    .cal-date strong { color: #1A1A1A; }
-    /* Links no rodapé do card */
-    .cal-links { display: flex; gap: 12px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #E0E0E0; }
-    .cal-link { font-size: 12px; font-weight: 600; color: #0057E1; text-decoration: none; }
-    .cal-link:hover { text-decoration: underline; }
-    .loading { text-align: center; padding: 40px; color: #6B6B6B; }
+    .cal-wrap { max-width: 1100px; margin: 0 auto; padding: 48px 32px; }
+
+    .cal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 2px; }
+
+    .cal-card {
+      background: var(--s1); border: 1.5px solid var(--b1);
+      padding: 20px; display: flex; flex-direction: column;
+      transition: background .2s;
+    }
+    .cal-card:hover { background: var(--s2); }
+    .cal-card.is-done { opacity: .55; }
+    .cal-card.is-done:hover { opacity: .7; }
+    .cal-card.is-next { border-color: var(--red); background: rgba(232,0,26,.04); }
+    .cal-card.is-sprint { border-left: 3px solid var(--amber); }
+
+    .cc-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .cc-num { font-family: var(--font-orb); font-size: var(--sz-xs); font-weight: 700; color: var(--w45); }
+    .cc-badge {
+      font-size: 11px; font-weight: 700; padding: 3px 10px;
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .cc-badge.next {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(232,0,26,.12); color: var(--red);
+    }
+    .cc-badge.done { background: var(--s3); color: var(--w45); }
+    .cc-badge.sprint { background: rgba(255,180,0,.12); color: var(--amber); }
+
+    .cc-flag { font-size: 28px; margin-bottom: 8px; }
+    .cc-name {
+      font-family: var(--font-display); font-weight: 700;
+      font-size: var(--sz-lg); text-transform: uppercase; line-height: 1.1;
+    }
+    .cc-circuit { font-size: var(--sz-sm); color: var(--w45); margin: 4px 0 16px; }
+
+    .cc-date { display: flex; gap: 8px; align-items: baseline; margin-bottom: 16px; }
+    .cc-date-day { font-weight: 700; font-size: var(--sz-base); }
+    .cc-date-time { font-size: var(--sz-sm); color: var(--w45); }
+
+    .cc-actions {
+      margin-top: auto; padding-top: 12px; border-top: 1px solid var(--b1);
+      display: flex; gap: 16px; flex-wrap: wrap;
+    }
+    .cc-link {
+      font-size: var(--sz-sm); font-weight: 700; color: var(--red);
+      text-decoration: none; text-transform: uppercase; letter-spacing: .5px;
+    }
+    .cc-link:hover { text-decoration: underline; }
+    .cc-link.palpite { color: var(--green); }
+
+    .loading { text-align: center; padding: 40px; color: var(--w45); }
+
+    @media (max-width: 768px) {
+      .cal-wrap { padding: 24px 16px; }
+      .cal-grid { grid-template-columns: 1fr; }
+    }
   `]
 })
 export class CalendarioComponent implements OnInit {

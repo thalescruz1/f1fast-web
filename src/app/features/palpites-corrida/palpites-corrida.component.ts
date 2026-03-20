@@ -1,54 +1,42 @@
-// ============================================================
-// COMPONENTE: PalpitesCorridaComponent
-// ============================================================
-// Responsável pela página /palpites/:etapaId.
-// Exibe todos os palpites enviados por todos os participantes
-// para uma corrida específica — fica visível após o prazo.
-//
-// Modificações:
-//   - Exibe login apenas (sem nome completo)
-//   - Coluna de login fixa durante scroll horizontal
-//   - Resultado oficial exibido em seção separada acima da tabela
-//   - Nome da etapa e circuito no cabeçalho
-//   - Pontos ganhos por posição exibidos em badge colorido
-// ============================================================
-
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { PalpitePublico, ResultadoPublico, Etapa } from '../../core/models';
 
 @Component({
   selector: 'app-palpites-corrida',
   standalone: true,
-  imports: [CommonModule, DatePipe],
+  imports: [CommonModule, DatePipe, RouterLink],
   template: `
-    <div class="page">
-      <div class="section-head">
-        <h2>
+    <div class="pc-wrap">
+      <div class="page-header">
+        <div>
+          <div class="ph-eyebrow">Palpites</div>
+          <h1 class="ph-title">
+            @if (etapa()) {
+              {{ etapa()!.pais }} {{ etapa()!.nome }}
+            } @else {
+              PALPITES DA CORRIDA
+            }
+          </h1>
           @if (etapa()) {
-            {{ etapa()!.pais }} {{ etapa()!.nome }}
-          } @else {
-            Palpites da Corrida
+            <div class="ph-sub">{{ etapa()!.circuito }} · {{ etapa()!.cidade }}</div>
           }
-        </h2>
-        @if (etapa()) {
-          <p>{{ etapa()!.circuito }} · {{ etapa()!.cidade }}</p>
-        } @else {
-          <p>Todos os palpites enviados para esta etapa.</p>
-        }
+        </div>
+        <div class="ph-right">
+          <a routerLink="/palpites" class="btn-outline">Voltar</a>
+        </div>
       </div>
 
       @if (loading()) {
         <div class="loading">Carregando...</div>
       } @else if (erro()) {
-        <div class="card empty">{{ erro() }}</div>
+        <div class="empty">{{ erro() }}</div>
       } @else {
 
-        <!-- Resultado oficial em seção separada -->
         @if (resultado()) {
-          <div class="card resultado-card">
+          <div class="resultado-card">
             <div class="resultado-title">Resultado Oficial</div>
             <div class="resultado-grid">
               <div class="res-item pole">
@@ -69,105 +57,128 @@ import { PalpitePublico, ResultadoPublico, Etapa } from '../../core/models';
           </div>
         }
 
-        <!-- Legenda de pontos (só aparece quando há resultado) -->
         @if (resultado()) {
           <div class="legenda">
-            <span class="leg-item pts3">+3 exato</span>
-            <span class="leg-item pts2">+2 ±1 pos</span>
-            <span class="leg-item pts1">+1 piloto certo</span>
-            <span class="leg-item pts0">0</span>
+            <span class="leg pts3">+3 exato</span>
+            <span class="leg pts2">+2 ±1 pos</span>
+            <span class="leg pts1">+1 piloto certo</span>
+            <span class="leg pts0">0</span>
           </div>
         }
 
-        <!-- Tabela de palpites -->
-        <div class="card">
-          <div class="table-wrapper">
-            <table class="palpites-table">
-              <thead>
+        <div class="table-wrapper">
+          <table class="palpites-table">
+            <thead>
+              <tr>
+                <th class="col-fixed">Participante</th>
+                <th>Enviado</th>
+                <th>Pole</th>
+                <th>1°</th><th>2°</th><th>3°</th><th>4°</th><th>5°</th>
+                <th>6°</th><th>7°</th><th>8°</th><th>9°</th><th>10°</th>
+                <th>MV</th>
+                <th>Pts</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of palpites(); track p.login) {
                 <tr>
-                  <th class="col-fixed">Participante</th>
-                    <th>Enviado em</th>
-                  <th>Pole</th>
-                  <th>1°</th><th>2°</th><th>3°</th><th>4°</th><th>5°</th>
-                  <th>6°</th><th>7°</th><th>8°</th><th>9°</th><th>10°</th>
-                  <th>MV</th>
-                  <th>Pontos</th>
-                
-                </tr>
-              </thead>
-              <tbody>
-                @for (p of palpites(); track p.login) {
-                  <tr>
-                    <td class="col-fixed login-cell">{{ p.login }}</td>
-
-                    <td class="enviado-em">{{ p.enviadoEm | date:'dd/MM HH:mm' }}</td>
-                    <!-- Para cada posição, calcula e exibe os pontos ganhos -->
-                    @for (pos of p.posicoes; track $index) {
-                      <td class="piloto-cell" [class]="classeCell($index, p.posicoes)">
-                        <span class="driver-name">{{ abreviar(pos) }}</span>
-                        @if (resultado()) {
-                          @let pts = pontosNaPosicao($index, p.posicoes);
-                          @if (pts > 0) {
-                            <span class="pts-badge" [class]="'badge-' + pts">+{{ pts }}</span>
-                          }
+                  <td class="col-fixed login-cell">{{ p.login }}</td>
+                  <td class="enviado">{{ p.enviadoEm | date:'dd/MM HH:mm' }}</td>
+                  @for (pos of p.posicoes; track $index) {
+                    <td class="piloto-cell" [class]="classeCell($index, p.posicoes)">
+                      <span class="driver-name">{{ abreviar(pos) }}</span>
+                      @if (resultado()) {
+                        @let pts = pontosNaPosicao($index, p.posicoes);
+                        @if (pts > 0) {
+                          <span class="pts-badge" [class]="'badge-' + pts">+{{ pts }}</span>
                         }
-                      </td>
-                    }
-                    <td class="pts-total">{{ p.pontosObtidos ?? '—' }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+                      }
+                    </td>
+                  }
+                  <td class="pts-total">{{ p.pontosObtidos ?? '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
       }
     </div>
   `,
   styles: [`
-    .palpites-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    /* Timing board header — estilo F1 escuro */
-    .palpites-table th { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px; padding: 10px 8px; text-align: left; border-bottom: 2px solid #E10600; white-space: nowrap; background: #1A1A1A; }
-    .palpites-table th.col-fixed { background: #1A1A1A; color: rgba(255,255,255,0.9); }
-    .palpites-table td { padding: 8px; border-bottom: 1px solid #E0E0E0; vertical-align: middle; }
-    .palpites-table tbody tr:hover { background: #FAFAFA; }
-    /* Coluna fixa */
-    .col-fixed { position: sticky; left: 0; background: white; z-index: 2; box-shadow: 2px 0 4px rgba(0,0,0,0.06); }
-    .palpites-table tbody tr:hover .col-fixed { background: #FAFAFA; }
-    .login-cell { font-weight: 600; font-size: 13px; white-space: nowrap; }
-    /* Célula de posição com badge de pontos */
-    .piloto-cell { white-space: nowrap; }
-    .driver-name { font-size: 12px; color: #444; display: block; }
-    /* Coloração de fundo por pontuação */
-    .piloto-cell.cell-3 { background: rgba(22,163,74,0.08); }
-    .piloto-cell.cell-2 { background: rgba(0,87,225,0.07); }
-    .piloto-cell.cell-1 { background: rgba(229,168,0,0.10); }
-    /* Badge de pontos */
-    .pts-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 8px; margin-top: 2px; }
-    .badge-3 { background: #dcfce7; color: #166534; }
-    .badge-2 { background: rgba(0,87,225,0.12); color: #0057E1; }
-    .badge-1 { background: rgba(229,168,0,0.15); color: #996F00; }
-    /* Total de pontos */
-    .pts-total { font-weight: 700; color: #0057E1; }
-    /* Data do palpite */
-    .enviado-em { font-size: 11px; color: #6B6B6B; white-space: nowrap; }
-    .loading, .empty { text-align: center; padding: 40px; color: #6B6B6B; }
-    .table-wrapper { width: 100%; overflow-x: auto; }
-    /* Resultado oficial — estilo F1 escuro */
-    .resultado-card { margin-bottom: 8px; padding: 16px 20px; background: #1A1A1A !important; border-top: 3px solid #E10600 !important; }
-    .resultado-title { font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: white; margin-bottom: 12px; }
-    .resultado-grid { display: flex; flex-wrap: nowrap; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
-    .res-item { display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.05); border-radius: 6px; padding: 8px 10px; min-width: 90px; flex-shrink: 0; }
-    .res-item.pole { border-top: 2px solid #E5A800; }
-    .res-item.mv   { border-top: 2px solid #16A34A; }
-    .res-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 4px; }
-    .res-value { font-size: 12px; font-weight: 600; text-align: center; color: white; }
+    .pc-wrap { max-width: 1200px; margin: 0 auto; padding: 40px 32px; }
+
+    /* Resultado */
+    .resultado-card {
+      background: var(--s2); border: 1.5px solid var(--b1);
+      border-top: 3px solid var(--red); padding: 18px 22px; margin-bottom: 8px;
+    }
+    .resultado-title {
+      font-family: var(--font-orb); font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 2px; color: var(--white); margin-bottom: 14px;
+    }
+    .resultado-grid { display: flex; flex-wrap: nowrap; gap: 4px; overflow-x: auto; padding-bottom: 4px; }
+    .res-item {
+      display: flex; flex-direction: column; align-items: center;
+      background: var(--s1); padding: 10px 12px; min-width: 80px; flex-shrink: 0;
+    }
+    .res-item.pole { border-top: 2px solid var(--gold); }
+    .res-item.mv { border-top: 2px solid var(--green); }
+    .res-label { font-size: 10px; font-weight: 700; color: var(--w45); text-transform: uppercase; margin-bottom: 4px; }
+    .res-value { font-size: var(--sz-sm); font-weight: 700; text-align: center; }
+
     /* Legenda */
-    .legenda { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-    .leg-item { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 10px; }
-    .leg-item.pts3 { background: #dcfce7; color: #166534; }
-    .leg-item.pts2 { background: rgba(0,87,225,0.12); color: #0057E1; }
-    .leg-item.pts1 { background: rgba(229,168,0,0.15); color: #996F00; }
-    .leg-item.pts0 { background: #F5F5F5; color: #6B6B6B; }
+    .legenda { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .leg {
+      font-size: 11px; font-weight: 700; padding: 4px 10px;
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .leg.pts3 { background: rgba(0,230,118,.12); color: var(--green); }
+    .leg.pts2 { background: rgba(232,0,26,.12); color: var(--red); }
+    .leg.pts1 { background: rgba(255,180,0,.12); color: var(--amber); }
+    .leg.pts0 { background: var(--s2); color: var(--w45); }
+
+    /* Table */
+    .table-wrapper { width: 100%; overflow-x: auto; }
+    .palpites-table { width: 100%; border-collapse: collapse; font-size: var(--sz-sm); }
+    .palpites-table th {
+      font-size: 11px; font-weight: 700; color: var(--w45);
+      text-transform: uppercase; letter-spacing: 1px; padding: 12px 10px;
+      text-align: left; border-bottom: 2px solid var(--red); white-space: nowrap;
+      background: var(--s2);
+    }
+    .palpites-table td {
+      padding: 10px; border-bottom: 1px solid var(--b1); vertical-align: middle;
+    }
+    .palpites-table tbody tr { transition: background .1s; }
+    .palpites-table tbody tr:hover { background: var(--s1); }
+
+    .col-fixed {
+      position: sticky; left: 0; background: var(--bg); z-index: 2;
+      box-shadow: 2px 0 4px rgba(0,0,0,.3);
+    }
+    .palpites-table thead .col-fixed { background: var(--s2); }
+    .palpites-table tbody tr:hover .col-fixed { background: var(--s1); }
+    .login-cell { font-weight: 700; white-space: nowrap; }
+    .enviado { font-size: var(--sz-xs); color: var(--w45); white-space: nowrap; }
+
+    .piloto-cell { white-space: nowrap; }
+    .driver-name { font-size: var(--sz-sm); display: block; }
+    .piloto-cell.cell-3 { background: rgba(0,230,118,.06); }
+    .piloto-cell.cell-2 { background: rgba(232,0,26,.06); }
+    .piloto-cell.cell-1 { background: rgba(255,180,0,.06); }
+
+    .pts-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 6px; margin-top: 2px; }
+    .badge-3 { background: rgba(0,230,118,.15); color: var(--green); }
+    .badge-2 { background: rgba(232,0,26,.15); color: var(--red); }
+    .badge-1 { background: rgba(255,180,0,.15); color: var(--amber); }
+
+    .pts-total { font-family: var(--font-orb); font-weight: 700; color: var(--red); }
+
+    .loading, .empty { text-align: center; padding: 40px; color: var(--w45); }
+
+    @media (max-width: 768px) {
+      .pc-wrap { padding: 24px 16px; }
+    }
   `]
 })
 export class PalpitesCorridaComponent implements OnInit {
@@ -180,7 +191,6 @@ export class PalpitesCorridaComponent implements OnInit {
   loading   = signal(true);
   erro      = signal('');
 
-  // Índices 0–9 para gerar as 10 posições no template do resultado
   posIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
   ngOnInit() {
@@ -202,12 +212,6 @@ export class PalpitesCorridaComponent implements OnInit {
     });
   }
 
-  /**
-   * Abrevia o nome do piloto para o formato "NUM — SOB"
-   * onde SOB = 3 primeiras letras do sobrenome em maiúsculas.
-   * Ex: "3 — Max Verstappen" → "3 — VER"
-   *     "44 — Lewis Hamilton" → "44 — HAM"
-   */
   abreviar(piloto: string): string {
     if (!piloto || piloto === '?') return piloto;
     const partes = piloto.split(' — ');
@@ -217,48 +221,26 @@ export class PalpitesCorridaComponent implements OnInit {
     return `${partes[0]} — ${sobrenome.substring(0, 3).toUpperCase()}`;
   }
 
-  /**
-   * Calcula os pontos ganhos em uma posição específica.
-   *
-   * posIndex = índice no array posicoes:
-   *   0       → Pole Position (+2 se acertar)
-   *   1 a 10  → Posições da corrida (+3 exato, +2 ±1 pos, +1 piloto certo)
-   *   11      → Melhor Volta (+3 se acertar)
-   */
   pontosNaPosicao(posIndex: number, palpitePosicoes: string[]): number {
     const res = this.resultado();
     if (!res) return 0;
 
-    const driver     = palpitePosicoes[posIndex];
-    const resDriver  = res.posicoes[posIndex];
+    const driver    = palpitePosicoes[posIndex];
+    const resDriver = res.posicoes[posIndex];
 
-    // Pole (índice 0)
     if (posIndex === 0) return driver === resDriver ? 2 : 0;
-
-    // Melhor Volta (índice 11)
     if (posIndex === 11) return driver === resDriver ? 3 : 0;
-
-    // Posições 1–10: índices 1 a 10 no array
-    if (driver === resDriver) return 3; // acerto exato
-
-    // Caso especial: chutou 10° (posIndex=10) e o piloto chegou 11° → erro de 1 posição → +2
+    if (driver === resDriver) return 3;
     if (posIndex === 10 && driver === res.pos11) return 2;
 
-    // Verifica se o piloto está em alguma posição do top-10 real (índices 1–10)
-    const resPosicoes = res.posicoes.slice(1, 11); // posições reais [1..10]
-    const realIdx     = resPosicoes.indexOf(driver);   // posição real do piloto (-1 se não está)
-    if (realIdx === -1) return 0; // piloto não está no top-10 real nem no 11°
+    const resPosicoes = res.posicoes.slice(1, 11);
+    const realIdx     = resPosicoes.indexOf(driver);
+    if (realIdx === -1) return 0;
 
-    // Diferença entre o índice real do piloto e o índice do palpite
-    // Ambos usam base 0 dentro do slice de posições (0 = 1°, 9 = 10°)
-    const palpiteIdx = posIndex - 1; // converte índice do array para índice de posição (base 0)
+    const palpiteIdx = posIndex - 1;
     return Math.abs(realIdx - palpiteIdx) === 1 ? 2 : 1;
   }
 
-  /**
-   * Retorna a classe CSS de fundo da célula conforme os pontos ganhos.
-   * Só colore quando há resultado disponível.
-   */
   classeCell(posIndex: number, palpitePosicoes: string[]): string {
     if (!this.resultado()) return 'piloto-cell';
     const pts = this.pontosNaPosicao(posIndex, palpitePosicoes);

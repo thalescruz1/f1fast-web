@@ -1,11 +1,3 @@
-// ============================================================
-// COMPONENTE: CadastroComponent
-// ============================================================
-// Responsável pela página de cadastro de novos usuários (/cadastro).
-// Coleta nome, sobrenome, login, CPF, e-mail, localização e senha.
-// Após o cadastro bem-sucedido, redireciona para /entrar.
-// ============================================================
-
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -17,60 +9,67 @@ import { AuthService } from '../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   template: `
-    <div class="auth-page">
-      <div class="auth-card card">
-        <div class="auth-header">
-          <div class="auth-logo">F1<span>FAST</span></div>
-          <h2>Cadastro</h2>
-          <p>Crie sua conta gratuitamente e participe do CV2026</p>
+    <div class="auth-layout">
+      <div class="auth-visual">
+        <div class="auth-vis-bg"></div>
+        <div class="auth-vis-stripe"></div>
+        <div class="auth-vis-content">
+          <div class="auth-vis-logo">F1<span>FAST</span></div>
+          <div class="auth-vis-ghost">JOIN<br>THE<br>RACE</div>
+          <div class="auth-vis-sub">
+            Faça seus palpites e dispute o título<br>
+            do Campeonato Virtual F1Fast 2026
+          </div>
         </div>
+      </div>
 
+      <div class="auth-right">
         <div class="auth-form">
-          <!-- field-row = dois campos lado a lado (grid CSS 1fr 1fr) -->
+          <div class="form-tag">Novo piloto</div>
+          <h1 class="form-h">CADASTRO</h1>
+          <p class="form-p">Crie sua conta gratuitamente e participe do CV2026</p>
+
           <div class="field-row">
             <div class="field">
               <label>Nome</label>
-              <!-- [(ngModel)]="form.nome" = two-way binding com a propriedade
-                   "nome" do objeto "form" definido na classe -->
-              <input type="text" [(ngModel)]="form.nome" placeholder="Primeiro nome" class="form-input">
+              <input type="text" [(ngModel)]="form.nome" placeholder="Primeiro nome">
             </div>
             <div class="field">
               <label>Sobrenome</label>
-              <input type="text" [(ngModel)]="form.sobrenome" placeholder="Sobrenome" class="form-input">
+              <input type="text" [(ngModel)]="form.sobrenome" placeholder="Sobrenome">
             </div>
           </div>
           <div class="field">
             <label>Login <span class="hint">(máx. 10 caracteres)</span></label>
-            <!-- maxlength="10" = limite HTML nativo que impede digitar mais de 10 chars -->
-            <input type="text" [(ngModel)]="form.login" placeholder="Seu login" class="form-input" maxlength="10">
+            <input type="text" [(ngModel)]="form.login" placeholder="Seu login" maxlength="10">
           </div>
           <div class="field">
             <label>CPF</label>
-            <input type="text" [(ngModel)]="form.cpf" placeholder="Sem pontos ou traços" class="form-input">
+            <input type="text" [(ngModel)]="form.cpf" placeholder="Sem pontos ou traços">
           </div>
           <div class="field">
             <label>E-mail</label>
-            <input type="email" [(ngModel)]="form.email" placeholder="seu@email.com" class="form-input">
+            <input type="email" [(ngModel)]="form.email" placeholder="seu@email.com">
           </div>
           <div class="field">
             <label>Cidade / Estado <span class="hint">(ex: São Paulo-SP)</span></label>
-            <input type="text" [(ngModel)]="form.localizacao" placeholder="São Paulo-SP" class="form-input">
+            <input type="text" [(ngModel)]="form.localizacao" placeholder="São Paulo-SP">
           </div>
           <div class="field">
             <label>Senha <span class="hint">(máx. 8 caracteres)</span></label>
-            <input type="password" [(ngModel)]="form.senha" placeholder="Sua senha" class="form-input" maxlength="8">
+            <input type="password" [(ngModel)]="form.senha" placeholder="Sua senha" maxlength="8"
+                   (keydown.enter)="cadastrar()">
           </div>
 
-          <!-- Mensagem de feedback: verde (sucesso) ou vermelho (erro) -->
           @if (mensagem()) {
-            <div class="msg" [class.error]="msgErro()">{{ mensagem() }}</div>
+            <div class="msg" [class.error]="msgErro()" [class.success]="!msgErro()">{{ mensagem() }}</div>
           }
 
-          <button class="btn btn-red btn-full" (click)="cadastrar()" [disabled]="carregando()">
+          <button class="form-submit" (click)="cadastrar()" [disabled]="carregando()">
             {{ carregando() ? 'Cadastrando...' : 'Criar Conta' }}
           </button>
 
-          <div class="auth-footer">
+          <div class="form-footer">
             Já tem conta? <a routerLink="/entrar">Entrar</a>
           </div>
         </div>
@@ -78,73 +77,126 @@ import { AuthService } from '../../core/services/auth.service';
     </div>
   `,
   styles: [`
-    .auth-page {
-      min-height: calc(100vh - 56px);
-      display: flex; align-items: center; justify-content: center;
-      padding: 24px;
-      /* Speed lines diagonais sutis */
-      background:
-        repeating-linear-gradient(-45deg, transparent, transparent 40px, rgba(225,6,0,0.02) 40px, rgba(225,6,0,0.02) 42px),
-        #F5F5F5;
+    .auth-layout {
+      display: grid; grid-template-columns: 1fr 1fr;
+      min-height: calc(100vh - 64px);
     }
-    .auth-card { width: 100%; max-width: 480px; padding: 32px; border-top: 3px solid #E10600 !important; }
-    .auth-logo { font-family: 'Orbitron', monospace; font-size: 20px; font-weight: 700; letter-spacing: 2px; margin-bottom: 8px; }
-    .auth-logo span { color: #E10600; }
-    .auth-header h2 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-    .auth-header p { font-size: 13px; color: #6B6B6B; margin-bottom: 24px; }
-    .auth-form { display: flex; flex-direction: column; gap: 14px; }
-    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .field { display: flex; flex-direction: column; gap: 6px; }
-    .field label { font-size: 13px; font-weight: 600; color: #1A1A1A; }
-    .hint { font-size: 11px; color: #6B6B6B; font-weight: 400; }
-    .form-input { padding: 10px 12px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px; font-family: inherit; }
-    .form-input:focus { outline: none; border-color: #E10600; box-shadow: 0 0 0 2px rgba(225,6,0,0.1); }
-    .msg { padding: 10px 14px; border-radius: 6px; font-size: 13px; background: #dcfce7; color: #166534; }
-    .msg.error { background: #fee2e2; color: #991b1b; }
-    .btn { padding: 11px 22px; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; }
-    .btn-red { background: #0057E1; color: white; }
-    .btn-full { width: 100%; }
-    .auth-footer { font-size: 13px; color: #6B6B6B; text-align: center; }
-    .auth-footer a { color: #0057E1; text-decoration: none; font-weight: 600; }
+    .auth-visual {
+      position: relative; overflow: hidden;
+      background: var(--s1); border-right: 1px solid var(--b1);
+      display: flex; align-items: center; justify-content: center;
+      padding: 48px;
+    }
+    .auth-vis-bg {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 35% 55%, rgba(232,0,26,.14) 0%, transparent 60%);
+    }
+    .auth-vis-stripe {
+      position: absolute; inset: 0;
+      background-image: repeating-linear-gradient(-12deg, transparent, transparent 72px, rgba(255,255,255,.02) 72px, rgba(255,255,255,.02) 73px);
+    }
+    .auth-vis-content { position: relative; z-index: 2; text-align: center; }
+    .auth-vis-logo {
+      font-family: var(--font-orb); font-size: 26px; font-weight: 900;
+      letter-spacing: 3px; margin-bottom: 28px; color: var(--white);
+    }
+    .auth-vis-logo span { color: var(--red); }
+    .auth-vis-ghost {
+      font-family: var(--font-display); font-style: italic; font-weight: 800;
+      font-size: clamp(80px, 12vw, 130px); text-transform: uppercase; line-height: .88;
+      color: transparent; -webkit-text-stroke: 1.5px rgba(255,255,255,.1);
+      letter-spacing: -3px; user-select: none;
+    }
+    .auth-vis-sub {
+      font-size: var(--sz-base); font-weight: 500; color: var(--w45);
+      margin-top: 28px; line-height: 1.8;
+    }
+
+    .auth-right {
+      display: flex; align-items: center; justify-content: center;
+      padding: 48px 56px; background: var(--bg);
+      overflow-y: auto;
+    }
+    .auth-form { width: 100%; max-width: 420px; }
+    .form-tag {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: var(--sz-sm); font-weight: 700; color: var(--red);
+      text-transform: uppercase; letter-spacing: 2px; margin-bottom: 14px;
+    }
+    .form-tag::before { content: ''; width: 20px; height: 2px; background: var(--red); }
+    .form-h {
+      font-family: var(--font-display); font-style: italic; font-weight: 800;
+      font-size: var(--sz-3xl); text-transform: uppercase; line-height: .9; margin-bottom: 8px;
+    }
+    .form-p { font-size: var(--sz-base); color: var(--w45); margin-bottom: 36px; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .field { margin-bottom: 24px; }
+    .field label {
+      display: block; font-size: var(--sz-sm); font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1.5px; color: var(--w45); margin-bottom: 10px;
+    }
+    .hint { font-weight: 500; font-size: var(--sz-xs); letter-spacing: 0; text-transform: none; }
+    .field input {
+      width: 100%; padding: 14px 0;
+      background: transparent; border: none; border-bottom: 2px solid var(--b3);
+      color: var(--white); font-size: var(--sz-md); font-family: var(--font-body);
+      outline: none; transition: border-color .2s;
+    }
+    .field input:focus { border-bottom-color: var(--red); }
+    .field input::placeholder { color: var(--w20); }
+
+    .form-submit {
+      width: 100%; margin-top: 20px; padding: 18px;
+      background: var(--red); border: 2px solid var(--red); color: #fff;
+      font-size: var(--sz-base); font-weight: 700; font-family: var(--font-body);
+      letter-spacing: 1px; cursor: pointer; transition: all .2s;
+    }
+    .form-submit:hover { background: transparent; color: var(--red); }
+    .form-submit:disabled { opacity: .5; cursor: not-allowed; }
+
+    .form-footer {
+      margin-top: 24px; text-align: center;
+      font-size: var(--sz-sm); font-weight: 500; color: var(--w45); line-height: 2.2;
+    }
+    .form-footer a { color: var(--red); text-decoration: none; font-weight: 700; }
+    .form-footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 768px) {
+      .auth-layout { grid-template-columns: 1fr; }
+      .auth-visual { display: none; }
+      .auth-right { padding: 32px 20px; }
+    }
   `]
 })
 export class CadastroComponent {
   private authService = inject(AuthService);
   private router      = inject(Router);
 
-  // Objeto simples com todos os campos do formulário.
-  // Cada propriedade está ligada a um input via [(ngModel)].
   form = { nome: '', sobrenome: '', login: '', cpf: '', email: '', localizacao: '', senha: '' };
 
-  mensagem   = signal('');       // texto de feedback exibido ao usuário
-  msgErro    = signal(false);    // true = mensagem é de erro (fundo vermelho)
-  carregando = signal(false);    // true enquanto aguarda resposta da API
+  mensagem   = signal('');
+  msgErro    = signal(false);
+  carregando = signal(false);
 
   cadastrar() {
-    // Desestruturação: extrai cada campo do objeto this.form para variáveis locais.
-    // É equivalente a: const nome = this.form.nome; const sobrenome = ...
     const { nome, sobrenome, login, cpf, email, localizacao, senha } = this.form;
 
-    // Valida que todos os campos foram preenchidos
     if (!nome || !sobrenome || !login || !cpf || !email || !localizacao || !senha) {
       this.setMsg('Preencha todos os campos.', true); return;
     }
 
     this.carregando.set(true);
 
-    // Envia o objeto form completo para POST /auth/register
     this.authService.register(this.form).subscribe({
       next: () => {
         this.setMsg('Conta criada! Redirecionando...', false);
-        // setTimeout = espera 1,5s antes de redirecionar para que o usuário
-        // veja a mensagem de sucesso antes de ser levado para o login
         setTimeout(() => this.router.navigate(['/entrar']), 1500);
       },
       error: e => { this.setMsg(e.error || 'Erro ao cadastrar.', true); this.carregando.set(false); }
     });
   }
 
-  // Método auxiliar para atualizar mensagem e flag de erro juntos.
   private setMsg(msg: string, erro: boolean) {
     this.mensagem.set(msg); this.msgErro.set(erro);
   }
