@@ -35,6 +35,14 @@ export interface Etapa {
   dataCorrida:   string | null; // Data da corrida ("string | null" = pode ser nulo)
   encerrada:     boolean;      // true = etapa finalizada, pontos calculados
   prazoExpirado: boolean;      // true = prazo já passou (calculado na API)
+  // Dados do circuito (editáveis no banco)
+  circuitoTipo:        string;  // Ex: "Circuito permanente"
+  circuitoComprimento: string;  // Ex: "5.451 km"
+  voltas:              number;  // Número de voltas (Sprint ou GP)
+  distancia:           string;  // Ex: "305.1 km"
+  recordista:          string;  // Ex: "Charles Leclerc"
+  tempoRecord:         string;  // Ex: "1:19.813"
+  anoRecord:           number;  // Ex: 2022
 }
 
 /** Dados enviados ao API ao submeter um palpite */
