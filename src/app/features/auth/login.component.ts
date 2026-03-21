@@ -30,8 +30,8 @@ import { AuthService } from '../../core/services/auth.service';
           <p class="form-p">Acesse sua conta para fazer seus palpites</p>
 
           <div class="field">
-            <label>Login</label>
-            <input type="text" [(ngModel)]="login" placeholder="Seu login">
+            <label>Login ou E-mail</label>
+            <input type="text" [(ngModel)]="login" placeholder="Seu login ou e-mail">
           </div>
           <div class="field">
             <label>Senha</label>
@@ -156,7 +156,7 @@ export class LoginComponent {
   carregando = signal(false);
 
   entrar() {
-    if (!this.login || !this.senha) { this.erro.set('Preencha login e senha.'); return; }
+    if (!this.login || !this.senha) { this.erro.set('Preencha login/e-mail e senha.'); return; }
 
     this.carregando.set(true);
 

@@ -25,13 +25,13 @@ import { ApiService } from '../../core/services/api.service';
         } @else if (!concluido()) {
           <div class="field">
             <label>Nova senha</label>
-            <input type="password" [(ngModel)]="novaSenha" placeholder="Entre 6 e 8 caracteres" maxlength="8">
-            <span class="field-hint">{{ novaSenha.length }}/8 caracteres</span>
+            <input type="password" [(ngModel)]="novaSenha" placeholder="Mín. 8 caracteres">
+            <span class="field-hint">Maiúscula · Número · Especial (!&#64;#$%&*)</span>
           </div>
           <div class="field">
             <label>Confirmar senha</label>
             <input type="password" [(ngModel)]="confirmarSenha" placeholder="Repita a nova senha"
-                   maxlength="8" (keydown.enter)="redefinir()">
+                   (keydown.enter)="redefinir()">
           </div>
 
           @if (erro()) {
@@ -122,8 +122,10 @@ export class RedefinirSenhaComponent implements OnInit {
 
   redefinir() {
     if (!this.novaSenha || !this.confirmarSenha) { this.erro.set('Preencha todos os campos.'); return; }
-    if (this.novaSenha.length < 6) { this.erro.set('A senha deve ter no mínimo 6 caracteres.'); return; }
-    if (this.novaSenha.length > 8) { this.erro.set('A senha deve ter no máximo 8 caracteres.'); return; }
+    if (this.novaSenha.length < 8) { this.erro.set('A senha deve ter no mínimo 8 caracteres.'); return; }
+    if (!/[A-Z]/.test(this.novaSenha)) { this.erro.set('A senha deve conter pelo menos uma letra maiúscula.'); return; }
+    if (!/[0-9]/.test(this.novaSenha)) { this.erro.set('A senha deve conter pelo menos um número.'); return; }
+    if (!/[!@#$%&*?\.\-_]/.test(this.novaSenha)) { this.erro.set('A senha deve conter pelo menos um caractere especial (!@#$%&*?.-_).'); return; }
     if (this.novaSenha !== this.confirmarSenha) { this.erro.set('As senhas não coincidem.'); return; }
 
     this.carregando.set(true);

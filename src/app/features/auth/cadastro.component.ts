@@ -56,9 +56,10 @@ import { AuthService } from '../../core/services/auth.service';
             <input type="text" [(ngModel)]="form.localizacao" placeholder="São Paulo-SP">
           </div>
           <div class="field">
-            <label>Senha <span class="hint">(máx. 8 caracteres)</span></label>
-            <input type="password" [(ngModel)]="form.senha" placeholder="Sua senha" maxlength="8"
+            <label>Senha</label>
+            <input type="password" [(ngModel)]="form.senha" placeholder="Mín. 8 caracteres"
                    (keydown.enter)="cadastrar()">
+            <span class="field-hint pwd-rules">Maiúscula · Número · Especial (!&#64;#$%&*)</span>
           </div>
 
           @if (mensagem()) {
@@ -137,6 +138,8 @@ import { AuthService } from '../../core/services/auth.service';
       text-transform: uppercase; letter-spacing: 1.5px; color: var(--w45); margin-bottom: 10px;
     }
     .hint { font-weight: 500; font-size: var(--sz-xs); letter-spacing: 0; text-transform: none; }
+    .field-hint { font-size: var(--sz-xs); color: var(--w45); margin-top: 6px; display: block; }
+    .pwd-rules { letter-spacing: 0; text-transform: none; font-weight: 400; }
     .field input {
       width: 100%; padding: 14px 0;
       background: transparent; border: none; border-bottom: 2px solid var(--b3);
@@ -184,6 +187,21 @@ export class CadastroComponent {
 
     if (!nome || !sobrenome || !login || !cpf || !email || !localizacao || !senha) {
       this.setMsg('Preencha todos os campos.', true); return;
+    }
+    if (login.includes(' ')) {
+      this.setMsg('O login não pode conter espaços.', true); return;
+    }
+    if (senha.length < 8) {
+      this.setMsg('A senha deve ter no mínimo 8 caracteres.', true); return;
+    }
+    if (!/[A-Z]/.test(senha)) {
+      this.setMsg('A senha deve conter pelo menos uma letra maiúscula.', true); return;
+    }
+    if (!/[0-9]/.test(senha)) {
+      this.setMsg('A senha deve conter pelo menos um número.', true); return;
+    }
+    if (!/[!@#$%&*?\.\-_]/.test(senha)) {
+      this.setMsg('A senha deve conter pelo menos um caractere especial (!@#$%&*?.-_).', true); return;
     }
 
     this.carregando.set(true);
