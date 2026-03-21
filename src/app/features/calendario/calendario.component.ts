@@ -30,11 +30,14 @@ import { Etapa } from '../../core/models';
             <div class="cal-card"
                  [class.is-next]="isProxima(e)"
                  [class.is-done]="e.encerrada"
+                 [class.is-cancelled]="e.cancelada"
                  [class.is-sprint]="e.sprint">
 
               <div class="cc-head">
                 <span class="cc-num">R{{ e.numero }}</span>
-                @if (isProxima(e)) {
+                @if (e.cancelada) {
+                  <span class="cc-badge cancel">Cancelada</span>
+                } @else if (isProxima(e)) {
                   <span class="cc-badge next"><span class="ldot"></span> Próxima</span>
                 } @else if (e.encerrada) {
                   <span class="cc-badge done">Encerrada</span>
@@ -53,8 +56,10 @@ import { Etapa } from '../../core/models';
               </div>
 
               <div class="cc-actions">
-                <a [routerLink]="['/etapa', e.id]" class="cc-link">Ver Detalhes →</a>
-                @if (!e.encerrada && !e.prazoExpirado) {
+                @if (!e.cancelada) {
+                  <a [routerLink]="['/etapa', e.id]" class="cc-link">Ver Detalhes →</a>
+                }
+                @if (!e.cancelada && !e.encerrada && !e.prazoExpirado) {
                   <a routerLink="/palpite" class="cc-link palpite">Fazer Palpite</a>
                 }
                 @if (e.encerrada) {
@@ -80,6 +85,8 @@ import { Etapa } from '../../core/models';
     .cal-card:hover { background: var(--s2); }
     .cal-card.is-done { opacity: .55; }
     .cal-card.is-done:hover { opacity: .7; }
+    .cal-card.is-cancelled { opacity: .35; border-left: 3px solid var(--red); }
+    .cal-card.is-cancelled .cc-name { text-decoration: line-through; }
     .cal-card.is-next { border-color: var(--red); background: rgba(232,0,26,.04); }
     .cal-card.is-sprint { border-left: 3px solid var(--amber); }
 
@@ -94,6 +101,7 @@ import { Etapa } from '../../core/models';
       background: rgba(232,0,26,.12); color: var(--red);
     }
     .cc-badge.done { background: var(--s3); color: var(--w45); }
+    .cc-badge.cancel { background: rgba(232,0,26,.12); color: var(--red); }
     .cc-badge.sprint { background: rgba(255,180,0,.12); color: var(--amber); }
 
     .cc-flag { font-size: 28px; margin-bottom: 8px; }
@@ -139,7 +147,7 @@ export class CalendarioComponent implements OnInit {
   }
 
   isProxima(etapa: Etapa): boolean {
-    const proxima = this.etapas().find(e => !e.encerrada && !e.prazoExpirado);
+    const proxima = this.etapas().find(e => !e.encerrada && !e.cancelada && !e.prazoExpirado);
     return proxima?.id === etapa.id;
   }
 }

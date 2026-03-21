@@ -129,6 +129,11 @@ export class ApiService {
     );
   }
 
+  toggleCancelada(id: number) {
+    return this.http.patch<{ mensagem: string; cancelada: boolean }>(
+      `${this.base}/admin/etapas/${id}/cancelar`, {});
+  }
+
   /**
    * PATCH /api/admin/resultado/usuarios/{id}/role → altera o papel de um usuário
    * JSON.stringify(role) = serializa a string para enviar como body JSON

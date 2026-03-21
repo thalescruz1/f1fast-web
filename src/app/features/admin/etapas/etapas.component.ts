@@ -31,7 +31,7 @@ import { ApiService } from '../../../core/services/api.service';
           </thead>
           <tbody>
             @for (e of etapas(); track e.id) {
-              <tr [class.done]="e.encerrada">
+              <tr [class.done]="e.encerrada" [class.cancelled]="e.cancelada">
                 <td class="num">{{ e.numero }}</td>
                 <td>
                   <span class="flag">{{ e.pais }}</span>
@@ -40,7 +40,9 @@ import { ApiService } from '../../../core/services/api.service';
                 <td class="date">{{ e.dataCorrida | date:'dd/MM HH:mm' }}</td>
                 <td class="date">{{ e.prazoQualify | date:'dd/MM/yy HH:mm' }}</td>
                 <td>
-                  @if (e.encerrada) {
+                  @if (e.cancelada) {
+                    <span class="badge cancel">Cancelada</span>
+                  } @else if (e.encerrada) {
                     <span class="badge done">Encerrada</span>
                   } @else if (e.prazoExpirado) {
                     <span class="badge exp">Expirado</span>
@@ -52,10 +54,14 @@ import { ApiService } from '../../../core/services/api.service';
                   <input type="datetime-local" class="dt-input"
                          [(ngModel)]="form[e.id]" [disabled]="salvando[e.id]">
                 </td>
-                <td>
+                <td class="td-actions">
                   <button class="btn-save" (click)="salvar(e)"
                           [disabled]="salvando[e.id] || !form[e.id]">
                     {{ salvando[e.id] ? '...' : 'Salvar' }}
+                  </button>
+                  <button class="btn-cancel" [class.reativar]="e.cancelada"
+                          (click)="toggleCancelada(e)" [disabled]="cancelando[e.id]">
+                    {{ e.cancelada ? 'Reativar' : 'Cancelar' }}
                   </button>
                 </td>
               </tr>
@@ -91,6 +97,8 @@ import { ApiService } from '../../../core/services/api.service';
     .table tbody tr { transition: background .1s; }
     .table tbody tr:hover:not(.msg-row) { background: var(--s2); }
     .table tbody tr.done { opacity: .45; }
+    .table tbody tr.cancelled { opacity: .35; }
+    .table tbody tr.cancelled .gp-name { text-decoration: line-through; }
 
     .num { font-family: var(--font-orb); font-weight: 700; color: var(--w45); width: 32px; }
     .flag { font-size: 16px; margin-right: 6px; }
@@ -104,6 +112,7 @@ import { ApiService } from '../../../core/services/api.service';
     .badge.ok { background: rgba(0,230,118,.12); color: var(--green); }
     .badge.exp { background: rgba(255,180,0,.12); color: var(--amber); }
     .badge.done { background: var(--s3); color: var(--w45); }
+    .badge.cancel { background: rgba(232,0,26,.12); color: var(--red); }
 
     .dt-input {
       padding: 7px 10px; background: var(--s2); border: 1.5px solid var(--b2);
@@ -118,6 +127,17 @@ import { ApiService } from '../../../core/services/api.service';
     }
     .btn-save:disabled { opacity: .5; cursor: not-allowed; }
 
+    .td-actions { display: flex; gap: 6px; align-items: center; }
+    .btn-cancel {
+      padding: 7px 10px; background: transparent; border: 1.5px solid var(--w45);
+      color: var(--w45); font-size: 11px; font-weight: 600; cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-cancel:hover { border-color: var(--red); color: var(--red); }
+    .btn-cancel.reativar { border-color: var(--green); color: var(--green); }
+    .btn-cancel.reativar:hover { background: rgba(0,230,118,.08); }
+    .btn-cancel:disabled { opacity: .5; cursor: not-allowed; }
+
     .msg-row td { padding: 0 10px 8px; }
 
     .loading { text-align: center; padding: 40px; color: var(--w45); }
@@ -129,20 +149,22 @@ export class EtapasAdminComponent implements OnInit {
   etapas  = signal<any[]>([]);
   loading = signal(true);
 
-  form:      Record<number, string>  = {};
-  salvando:  Record<number, boolean> = {};
-  mensagens: Record<number, string>  = {};
-  erros:     Record<number, boolean> = {};
+  form:       Record<number, string>  = {};
+  salvando:   Record<number, boolean> = {};
+  cancelando: Record<number, boolean> = {};
+  mensagens:  Record<number, string>  = {};
+  erros:      Record<number, boolean> = {};
 
   ngOnInit() {
     this.api.getEtapasAdmin().subscribe({
       next: etapas => {
         this.etapas.set(etapas);
         etapas.forEach((e: any) => {
-          this.form[e.id]     = this.toDatetimeLocal(e.prazoQualify);
-          this.salvando[e.id] = false;
+          this.form[e.id]      = this.toDatetimeLocal(e.prazoQualify);
+          this.salvando[e.id]  = false;
+          this.cancelando[e.id] = false;
           this.mensagens[e.id] = '';
-          this.erros[e.id]    = false;
+          this.erros[e.id]     = false;
         });
         this.loading.set(false);
       },
@@ -188,6 +210,31 @@ export class EtapasAdminComponent implements OnInit {
         this.salvando[etapa.id]  = false;
         this.erros[etapa.id]     = true;
         this.mensagens[etapa.id] = err.error?.mensagem || 'Erro ao salvar prazo.';
+      }
+    });
+  }
+
+  toggleCancelada(etapa: any) {
+    this.cancelando[etapa.id] = true;
+    this.mensagens[etapa.id]  = '';
+
+    this.api.toggleCancelada(etapa.id).subscribe({
+      next: (res) => {
+        this.cancelando[etapa.id] = false;
+        this.erros[etapa.id]      = false;
+        this.mensagens[etapa.id]  = res.mensagem;
+
+        const idx = this.etapas().findIndex((e: any) => e.id === etapa.id);
+        if (idx !== -1) {
+          const lista = [...this.etapas()];
+          lista[idx] = { ...lista[idx], cancelada: res.cancelada };
+          this.etapas.set(lista);
+        }
+      },
+      error: (err) => {
+        this.cancelando[etapa.id] = false;
+        this.erros[etapa.id]      = true;
+        this.mensagens[etapa.id]  = err.error?.mensagem || 'Erro ao alterar status.';
       }
     });
   }

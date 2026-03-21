@@ -50,6 +50,8 @@ export interface Etapa {
   classificacao:       string | null;
   // SVG do traçado do circuito (markup completo)
   circuitoSvg:         string;
+  // true = etapa cancelada (sem palpites, sem lembretes)
+  cancelada:           boolean;
 }
 
 /** Dados enviados ao API ao submeter um palpite */
