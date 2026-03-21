@@ -248,10 +248,21 @@ import { RankingItem, HistoricoEtapa } from '../../core/models';
     .badge.exato { background: rgba(232,0,26,.12); color: var(--red); }
 
     @media (max-width: 768px) {
-      .ranking-wrap { padding: 24px 16px; }
+      .ranking-wrap { padding: 24px 12px; }
       .podium { grid-template-columns: 1fr; }
       .pod-card.g1 { order: -1; }
+      .pod-card { padding: 16px 14px; }
+      .pod-pts { font-size: 28px; }
+      .pod-name { font-size: var(--sz-lg); }
+
       .rank-table th:nth-child(4), .rank-table td:nth-child(4) { display: none; }
+      .rank-table th { padding: 10px 8px; font-size: 10px; letter-spacing: .8px; }
+      .rank-table td { padding: 10px 8px; }
+      .td-posnum { font-size: var(--sz-sm); }
+      .td-name { font-size: var(--sz-base); }
+      .td-handle { font-size: 11px; }
+      .td-data { font-size: var(--sz-sm); }
+      .td-pts { font-size: var(--sz-base); }
     }
   `]
 })
