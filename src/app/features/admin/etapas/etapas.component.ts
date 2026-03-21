@@ -160,7 +160,7 @@ export class EtapasAdminComponent implements OnInit {
       next: etapas => {
         this.etapas.set(etapas);
         etapas.forEach((e: any) => {
-          this.form[e.id]      = this.toDatetimeLocal(e.prazoQualify);
+          this.form[e.id]      = e.prazoQualify ? e.prazoQualify.slice(0, 16) : '';
           this.salvando[e.id]  = false;
           this.cancelando[e.id] = false;
           this.mensagens[e.id] = '';
@@ -172,18 +172,6 @@ export class EtapasAdminComponent implements OnInit {
     });
   }
 
-  toDatetimeLocal(iso: string): string {
-    if (!iso) return '';
-    const d = new Date(iso);
-    const offset = d.getTimezoneOffset() * 60000;
-    const local  = new Date(d.getTime() - offset);
-    return local.toISOString().slice(0, 16);
-  }
-
-  toUtcIso(datetimeLocal: string): string {
-    return new Date(datetimeLocal).toISOString();
-  }
-
   salvar(etapa: any) {
     const novoValor = this.form[etapa.id];
     if (!novoValor) return;
@@ -191,9 +179,7 @@ export class EtapasAdminComponent implements OnInit {
     this.salvando[etapa.id]  = true;
     this.mensagens[etapa.id] = '';
 
-    const novoPrazoUtc = this.toUtcIso(novoValor);
-
-    this.api.atualizarPrazo(etapa.id, novoPrazoUtc).subscribe({
+    this.api.atualizarPrazo(etapa.id, novoValor).subscribe({
       next: () => {
         this.salvando[etapa.id]  = false;
         this.erros[etapa.id]     = false;
@@ -202,7 +188,7 @@ export class EtapasAdminComponent implements OnInit {
         const idx = this.etapas().findIndex((e: any) => e.id === etapa.id);
         if (idx !== -1) {
           const lista = [...this.etapas()];
-          lista[idx] = { ...lista[idx], prazoQualify: novoPrazoUtc, prazoExpirado: new Date(novoPrazoUtc) < new Date() };
+          lista[idx] = { ...lista[idx], prazoQualify: novoValor, prazoExpirado: new Date(novoValor) < new Date() };
           this.etapas.set(lista);
         }
       },
