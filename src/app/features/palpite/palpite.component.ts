@@ -486,7 +486,15 @@ export class PalpiteComponent implements OnInit {
           melhorVolta: this.nomePiloto(this.form['melhorVoltaId'])
         });
       },
-      error: (e: any) => { this.setMsg(e.error?.mensagem || 'Erro ao enviar.', true); this.enviando.set(false); }
+      error: (e: any) => {
+        let msg = 'Erro ao enviar.';
+        try {
+          const body = typeof e.error === 'string' ? JSON.parse(e.error) : e.error;
+          if (body?.mensagem) msg = body.mensagem;
+        } catch {}
+        this.setMsg(msg, true);
+        this.enviando.set(false);
+      }
     });
   }
 
