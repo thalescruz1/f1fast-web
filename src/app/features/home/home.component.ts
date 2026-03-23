@@ -46,7 +46,7 @@ import { Etapa } from '../../core/models';
               <div class="rc-head-lbl">
                 <span class="ldot"></span> Próxima Etapa
               </div>
-              <div class="rc-head-num">R{{ proxima()!.numero }}</div>
+              <div class="rc-head-num">C{{ proxima()!.numero }}</div>
             </div>
             <div class="rc-body">
               <div class="rc-flag">{{ proxima()!.pais }}</div>
