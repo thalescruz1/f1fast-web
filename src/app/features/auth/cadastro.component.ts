@@ -80,7 +80,7 @@ import { AuthService } from '../../core/services/auth.service';
   styles: [`
     .auth-layout {
       display: grid; grid-template-columns: 1fr 1fr;
-      min-height: calc(100vh - 64px);
+      min-height: calc(100vh - 64px - 80px);
     }
     .auth-visual {
       position: relative; overflow: hidden;
