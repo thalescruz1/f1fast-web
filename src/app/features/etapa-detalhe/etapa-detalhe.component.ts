@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -21,6 +21,34 @@ import { Etapa } from '../../core/models';
           <a routerLink="/calendario">Calendário</a>
           <span class="bc-sep">›</span>
           <span>{{ etapa()!.nome }}</span>
+        </div>
+
+        <!-- GP Navigation -->
+        <div class="gp-nav">
+          @if (prevEtapa()) {
+            <a class="gp-nav-side gp-prev" [routerLink]="['/etapa', prevEtapa()!.id]">
+              <span class="gp-nav-arrow">‹</span>
+              <span class="gp-nav-flag">{{ prevEtapa()!.pais }}</span>
+              <span class="gp-nav-label">{{ prevEtapa()!.nome }}</span>
+            </a>
+          } @else {
+            <div class="gp-nav-side"></div>
+          }
+
+          <div class="gp-nav-center">
+            <span class="gp-nav-flag-lg">{{ etapa()!.pais }}</span>
+            <span class="gp-nav-current">{{ etapa()!.nome }}</span>
+          </div>
+
+          @if (nextEtapa()) {
+            <a class="gp-nav-side gp-next" [routerLink]="['/etapa', nextEtapa()!.id]">
+              <span class="gp-nav-label">{{ nextEtapa()!.nome }}</span>
+              <span class="gp-nav-flag">{{ nextEtapa()!.pais }}</span>
+              <span class="gp-nav-arrow">›</span>
+            </a>
+          } @else {
+            <div class="gp-nav-side"></div>
+          }
         </div>
 
         <!-- Hero -->
@@ -136,6 +164,39 @@ import { Etapa } from '../../core/models';
     .breadcrumb a:hover { text-decoration: underline; }
     .bc-sep { color: var(--w20); }
 
+    /* GP Navigation */
+    .gp-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 28px; padding: 16px 0;
+      border-bottom: 1px solid var(--b1);
+    }
+    .gp-nav-side {
+      display: flex; align-items: center; gap: 8px;
+      text-decoration: none; color: var(--w45);
+      font-size: var(--sz-sm); font-weight: 500;
+      transition: color .2s; min-width: 0; flex: 1;
+    }
+    .gp-nav-side:hover { color: var(--white); }
+    .gp-next { justify-content: flex-end; text-align: right; }
+    .gp-nav-arrow {
+      font-size: 24px; font-weight: 700; color: var(--red); line-height: 1;
+      flex-shrink: 0;
+    }
+    .gp-nav-flag { font-size: 20px; flex-shrink: 0; }
+    .gp-nav-label {
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .gp-nav-center {
+      display: flex; align-items: center; gap: 10px;
+      flex-shrink: 0; padding: 0 20px;
+    }
+    .gp-nav-flag-lg { font-size: 28px; }
+    .gp-nav-current {
+      font-family: var(--font-display); font-weight: 800; font-style: italic;
+      font-size: var(--sz-lg); text-transform: uppercase; color: var(--white);
+      white-space: nowrap;
+    }
+
     .det-hero {
       display: flex; align-items: center; gap: 20px;
       padding-bottom: 28px; margin-bottom: 32px; border-bottom: 1px solid var(--b1);
@@ -213,6 +274,10 @@ import { Etapa } from '../../core/models';
       .det-wrap { padding: 24px 16px; }
       .det-grid { grid-template-columns: 1fr; }
       .det-hero { flex-wrap: wrap; }
+      .gp-nav-label { display: none; }
+      .gp-nav-center { padding: 0 12px; }
+      .gp-nav-current { font-size: var(--sz-base); }
+      .gp-nav-flag-lg { font-size: 22px; }
     }
   `]
 })
@@ -221,30 +286,62 @@ export class EtapaDetalheComponent implements OnInit {
   private route     = inject(ActivatedRoute);
   private sanitizer = inject(DomSanitizer);
 
-  etapa      = signal<Etapa | null>(null);
-  loading    = signal(true);
+  etapa       = signal<Etapa | null>(null);
+  allEtapas   = signal<Etapa[]>([]);
+  loading     = signal(true);
   circuitoSvg = signal<SafeHtml | null>(null);
 
-  ngOnInit() {
-    const etapaId = Number(this.route.snapshot.paramMap.get('id'));
+  prevEtapa = computed(() => {
+    const all = this.allEtapas();
+    const cur = this.etapa();
+    if (!cur || !all.length) return null;
+    const idx = all.findIndex(e => e.id === cur.id);
+    return idx > 0 ? all[idx - 1] : null;
+  });
 
-    this.api.getEtapas().subscribe({
-      next: etapas => {
-        const e = etapas.find(x => x.id === etapaId) ?? null;
-        this.etapa.set(e);
-        if (e?.circuitoSvg) {
-          let svg = e.circuitoSvg;
-          // Add viewBox if missing so the SVG scales properly
-          if (svg.includes('width="500"') && !svg.includes('viewBox')) {
-            svg = svg.replace('<svg ', '<svg viewBox="0 0 500 500" ');
-          }
-          // Remove fixed width/height so it fills the container
-          svg = svg.replace(/\s*width="\d+"/, '').replace(/\s*height="\d+"/, '');
-          this.circuitoSvg.set(this.sanitizer.bypassSecurityTrustHtml(svg));
-        }
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false)
+  nextEtapa = computed(() => {
+    const all = this.allEtapas();
+    const cur = this.etapa();
+    if (!cur || !all.length) return null;
+    const idx = all.findIndex(e => e.id === cur.id);
+    return idx >= 0 && idx < all.length - 1 ? all[idx + 1] : null;
+  });
+
+  private cachedEtapas: Etapa[] = [];
+
+  ngOnInit() {
+    // Subscribe to param changes so navigation between GPs works
+    this.route.paramMap.subscribe(params => {
+      const etapaId = Number(params.get('id'));
+      if (this.cachedEtapas.length) {
+        this.setEtapa(etapaId, this.cachedEtapas);
+      } else {
+        this.loading.set(true);
+        this.api.getEtapas().subscribe({
+          next: etapas => {
+            this.cachedEtapas = etapas;
+            this.allEtapas.set(etapas);
+            this.setEtapa(etapaId, etapas);
+          },
+          error: () => this.loading.set(false)
+        });
+      }
     });
+  }
+
+  private setEtapa(id: number, etapas: Etapa[]) {
+    const e = etapas.find(x => x.id === id) ?? null;
+    this.etapa.set(e);
+    this.circuitoSvg.set(null);
+    if (e?.circuitoSvg) {
+      let svg = e.circuitoSvg;
+      if (svg.includes('width="500"') && !svg.includes('viewBox')) {
+        svg = svg.replace('<svg ', '<svg viewBox="0 0 500 500" ');
+      }
+      svg = svg.replace(/\s*width="\d+"/, '').replace(/\s*height="\d+"/, '');
+      this.circuitoSvg.set(this.sanitizer.bypassSecurityTrustHtml(svg));
+    }
+    this.loading.set(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
