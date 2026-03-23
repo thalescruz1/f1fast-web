@@ -406,9 +406,18 @@ export class PalpiteComponent implements OnInit {
 
   fecharModal() { this.modalAberto.set(false); }
 
-  private ordemEquipes: string[] = [
-    'Mercedes', 'Ferrari', 'McLaren', 'Haas', 'Red Bull',
-    'Racing Bulls', 'Alpine', 'Audi', 'Williams', 'Cadillac', 'Aston Martin'
+  private ordemPilotos: string[] = [
+    'Lando Norris', 'Oscar Piastri',
+    'Max Verstappen', 'Isack Hadjar',
+    'Lewis Hamilton', 'Charles Leclerc',
+    'George Russell', 'Kimi Antonelli',
+    'Alex Albon', 'Carlos Sainz',
+    'Nico Hulkenberg', 'Gabriel Bortoleto',
+    'Liam Lawson', 'Arvid Lindblad',
+    'Esteban Ocon', 'Oliver Bearman',
+    'Fernando Alonso', 'Lance Stroll',
+    'Pierre Gasly', 'Franco Colapinto',
+    'Sergio Pérez', 'Valtteri Bottas'
   ];
 
   pilotosModal(): Piloto[] {
@@ -430,10 +439,10 @@ export class PalpiteComponent implements OnInit {
       );
     }
 
-    // Ordenar por equipe na ordem definida
+    // Ordenar pela ordem fixa de pilotos (por equipe)
     lista = [...lista].sort((a, b) => {
-      const ia = this.ordemEquipes.findIndex(e => a.equipe.toLowerCase().includes(e.toLowerCase()));
-      const ib = this.ordemEquipes.findIndex(e => b.equipe.toLowerCase().includes(e.toLowerCase()));
+      const ia = this.ordemPilotos.findIndex(n => a.nome.includes(n));
+      const ib = this.ordemPilotos.findIndex(n => b.nome.includes(n));
       return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
     });
 
