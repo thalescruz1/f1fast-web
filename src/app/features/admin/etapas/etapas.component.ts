@@ -34,7 +34,7 @@ import { ApiService } from '../../../core/services/api.service';
               <tr [class.done]="e.encerrada" [class.cancelled]="e.cancelada">
                 <td class="num">{{ e.numero }}</td>
                 <td>
-                  <span class="flag">{{ e.pais }}</span>
+                  <span class="flag"><span class="fi fi-{{e.pais}}"></span></span>
                   <span class="gp-name">{{ e.nome }}</span>
                 </td>
                 <td class="date">{{ e.dataCorrida | date:'dd/MM HH:mm' }}</td>

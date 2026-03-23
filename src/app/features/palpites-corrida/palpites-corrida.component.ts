@@ -15,7 +15,7 @@ import { PalpitePublico, ResultadoPublico, Etapa } from '../../core/models';
           <div class="ph-eyebrow">Palpites</div>
           <h1 class="ph-title">
             @if (etapa()) {
-              {{ etapa()!.pais }} {{ etapa()!.nome }}
+              <span class="fi fi-{{etapa()!.pais}}"></span> {{ etapa()!.nome }}
             } @else {
               PALPITES DA CORRIDA
             }

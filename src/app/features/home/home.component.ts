@@ -49,7 +49,7 @@ import { Etapa } from '../../core/models';
               <div class="rc-head-num">C{{ proxima()!.numero }}</div>
             </div>
             <div class="rc-body">
-              <div class="rc-flag">{{ proxima()!.pais }}</div>
+              <div class="rc-flag"><span class="fi fi-{{proxima()!.pais}}"></span></div>
               <div class="rc-name">{{ proxima()!.nome }}</div>
               <div class="rc-circuit">{{ proxima()!.circuito }} · {{ proxima()!.cidade }}</div>
 

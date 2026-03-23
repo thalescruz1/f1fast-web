@@ -66,7 +66,7 @@ interface PalpiteConfirmado {
                   <span class="ldot"></span>
                   <span>Etapa {{ proximaEtapa()!.numero }}</span>
                 </div>
-                <h1 class="gp-name">{{ proximaEtapa()!.pais }} {{ proximaEtapa()!.nome }}</h1>
+                <h1 class="gp-name"><span class="fi fi-{{proximaEtapa()!.pais}}"></span> {{ proximaEtapa()!.nome }}</h1>
                 <div class="gp-circuit">{{ proximaEtapa()!.circuito }} · {{ proximaEtapa()!.cidade }}</div>
               </div>
 

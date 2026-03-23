@@ -37,7 +37,7 @@ import { Etapa } from '../../core/models';
                     <span class="ce-badge exp">Ver palpites</span>
                   }
                 </div>
-                <div class="ce-flag">{{ e.pais }}</div>
+                <div class="ce-flag"><span class="fi fi-{{e.pais}}"></span></div>
                 <div class="ce-name">{{ e.nome }}</div>
                 <div class="ce-circuit">{{ e.circuito }}</div>
                 <div class="ce-date">{{ e.dataCorrida | date:'dd/MM · HH:mm' }}</div>
@@ -49,7 +49,7 @@ import { Etapa } from '../../core/models';
                   <span class="ce-num">R{{ e.numero }}</span>
                   <span class="ce-badge lock">Prazo aberto</span>
                 </div>
-                <div class="ce-flag">{{ e.pais }}</div>
+                <div class="ce-flag"><span class="fi fi-{{e.pais}}"></span></div>
                 <div class="ce-name">{{ e.nome }}</div>
                 <div class="ce-circuit">{{ e.circuito }}</div>
                 <div class="ce-date">{{ e.dataCorrida | date:'dd/MM · HH:mm' }}</div>

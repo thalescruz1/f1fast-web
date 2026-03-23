@@ -15,7 +15,7 @@ import { Piloto, Etapa, ResultadoRequest } from '../../../core/models';
         <option [ngValue]="0">Selecione a etapa</option>
         @for (e of etapas(); track e.id) {
           <option [ngValue]="e.id" [disabled]="e.encerrada">
-            {{ e.pais }} {{ e.nome }} {{ e.encerrada ? '(enc.)' : '' }}
+            <span class="fi fi-{{e.pais}}"></span> {{ e.nome }} {{ e.encerrada ? '(enc.)' : '' }}
           </option>
         }
       </select>

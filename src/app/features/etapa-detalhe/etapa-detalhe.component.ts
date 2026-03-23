@@ -28,7 +28,7 @@ import { Etapa } from '../../core/models';
           @if (prevEtapa()) {
             <a class="gp-nav-side gp-prev" [routerLink]="['/etapa', prevEtapa()!.id]">
               <span class="gp-nav-arrow">‹</span>
-              <span class="gp-nav-flag">{{ prevEtapa()!.pais }}</span>
+              <span class="gp-nav-flag"><span class="fi fi-{{prevEtapa()!.pais}}"></span></span>
               <span class="gp-nav-label">{{ prevEtapa()!.nome }}</span>
             </a>
           } @else {
@@ -36,14 +36,14 @@ import { Etapa } from '../../core/models';
           }
 
           <div class="gp-nav-center">
-            <span class="gp-nav-flag-lg">{{ etapa()!.pais }}</span>
+            <span class="gp-nav-flag-lg"><span class="fi fi-{{etapa()!.pais}}"></span></span>
             <span class="gp-nav-current">{{ etapa()!.nome }}</span>
           </div>
 
           @if (nextEtapa()) {
             <a class="gp-nav-side gp-next" [routerLink]="['/etapa', nextEtapa()!.id]">
               <span class="gp-nav-label">{{ nextEtapa()!.nome }}</span>
-              <span class="gp-nav-flag">{{ nextEtapa()!.pais }}</span>
+              <span class="gp-nav-flag"><span class="fi fi-{{nextEtapa()!.pais}}"></span></span>
               <span class="gp-nav-arrow">›</span>
             </a>
           } @else {
@@ -53,7 +53,7 @@ import { Etapa } from '../../core/models';
 
         <!-- Hero -->
         <div class="det-hero">
-          <div class="dh-flag">{{ etapa()!.pais }}</div>
+          <div class="dh-flag"><span class="fi fi-{{etapa()!.pais}}"></span></div>
           <div class="dh-info">
             <div class="dh-num">Etapa {{ etapa()!.numero }}</div>
             <h1 class="dh-name">{{ etapa()!.nome }}</h1>

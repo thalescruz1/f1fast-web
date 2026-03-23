@@ -46,7 +46,7 @@ import { Etapa } from '../../core/models';
                 }
               </div>
 
-              <div class="cc-name"><span class="cc-flag">{{ e.pais }}</span> {{ e.nome }}</div>
+              <div class="cc-name"><span class="cc-flag"><span class="fi fi-{{e.pais}}"></span></span> {{ e.nome }}</div>
               <div class="cc-circuit">{{ e.circuito }}</div>
 
               <div class="cc-date">

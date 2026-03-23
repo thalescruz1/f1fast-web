@@ -256,6 +256,9 @@ body::before {
 .msg.success { background: rgba(0,230,118,.1); color: var(--green); border: 1px solid rgba(0,230,118,.2); }
 .msg.error   { background: rgba(232,0,26,.1); color: #FF6B6B; border: 1px solid rgba(232,0,26,.2); }
 
+/* ═══ FLAG ICONS ══════════════════════════ */
+.fi { vertical-align: middle; }
+
 /* ═══ SCROLLBAR ═══════════════════════════ */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--s1); }
