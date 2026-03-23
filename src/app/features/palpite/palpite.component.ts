@@ -406,6 +406,11 @@ export class PalpiteComponent implements OnInit {
 
   fecharModal() { this.modalAberto.set(false); }
 
+  private ordemEquipes: string[] = [
+    'Mercedes', 'Ferrari', 'McLaren', 'Haas', 'Red Bull',
+    'Racing Bulls', 'Alpine', 'Audi', 'Williams', 'Cadillac', 'Aston Martin'
+  ];
+
   pilotosModal(): Piloto[] {
     const chave = this.modalChave();
     let lista = this.pilotos();
@@ -424,6 +429,13 @@ export class PalpiteComponent implements OnInit {
         p.nome.toLowerCase().includes(b) || p.equipe.toLowerCase().includes(b)
       );
     }
+
+    // Ordenar por equipe na ordem definida
+    lista = [...lista].sort((a, b) => {
+      const ia = this.ordemEquipes.findIndex(e => a.equipe.toLowerCase().includes(e.toLowerCase()));
+      const ib = this.ordemEquipes.findIndex(e => b.equipe.toLowerCase().includes(e.toLowerCase()));
+      return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+    });
 
     return lista;
   }
