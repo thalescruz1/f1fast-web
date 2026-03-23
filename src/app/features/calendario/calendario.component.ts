@@ -34,7 +34,7 @@ import { Etapa } from '../../core/models';
                  [class.is-sprint]="e.sprint">
 
               <div class="cc-head">
-                <span class="cc-num">R{{ e.numero }}</span>
+                <span class="cc-num">C{{ e.numero }}</span>
                 @if (e.cancelada) {
                   <span class="cc-badge cancel">Cancelada</span>
                 } @else if (isProxima(e)) {
@@ -46,8 +46,7 @@ import { Etapa } from '../../core/models';
                 }
               </div>
 
-              <div class="cc-flag">{{ e.pais }}</div>
-              <div class="cc-name">{{ e.nome }}</div>
+              <div class="cc-name"><span class="cc-flag">{{ e.pais }}</span> {{ e.nome }}</div>
               <div class="cc-circuit">{{ e.circuito }}</div>
 
               <div class="cc-date">
@@ -104,10 +103,11 @@ import { Etapa } from '../../core/models';
     .cc-badge.cancel { background: rgba(232,0,26,.12); color: var(--red); }
     .cc-badge.sprint { background: rgba(255,180,0,.12); color: var(--amber); }
 
-    .cc-flag { font-size: 28px; margin-bottom: 8px; }
+    .cc-flag { font-size: 22px; vertical-align: middle; margin-right: 4px; }
     .cc-name {
       font-family: var(--font-display); font-weight: 700;
-      font-size: var(--sz-lg); text-transform: uppercase; line-height: 1.1;
+      font-size: var(--sz-lg); text-transform: uppercase; line-height: 1.2;
+      display: flex; align-items: center; gap: 6px;
     }
     .cc-circuit { font-size: var(--sz-sm); color: var(--w45); margin: 4px 0 16px; }
 
