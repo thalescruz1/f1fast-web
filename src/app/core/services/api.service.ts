@@ -118,7 +118,7 @@ export class ApiService {
   }
 
   /**
-   * PATCH /api/admin/etapas/{id}/prazo → atualiza o prazo de apostas de uma etapa.
+   * PATCH /api/admin/etapas/{id}/prazo → atualiza o prazo de palpites de uma etapa.
    * novoPrazo deve ser uma string ISO 8601 em UTC (ex: "2026-03-16T23:59:00Z").
    */
   atualizarPrazo(id: number, novoPrazo: string) {

@@ -146,7 +146,7 @@ import { Etapa } from '../../core/models';
             <a routerLink="/palpite" class="cta-main">Fazer Palpite</a>
           }
           @if (etapa()!.encerrada) {
-            <a [routerLink]="['/palpites', etapa()!.id]" class="cta-sec">Ver Apostas</a>
+            <a [routerLink]="['/palpites', etapa()!.id]" class="cta-sec">Ver Palpites</a>
           }
           <a routerLink="/calendario" class="cta-sec">Voltar ao Calendário</a>
         </div>

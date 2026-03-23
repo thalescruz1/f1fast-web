@@ -23,30 +23,35 @@ export const routes: Routes = [
   // Página inicial — pública (qualquer um pode ver)
   {
     path: '',
+    title: 'F1Fast',
     loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent)
   },
 
   // Ranking geral — público
   {
     path: 'ranking',
+    title: 'Classificação — F1Fast',
     loadComponent: () => import('./features/ranking/ranking.component').then(m => m.RankingComponent)
   },
 
   // Calendário das 30 corridas — público
   {
     path: 'calendario',
+    title: 'Calendário — F1Fast',
     loadComponent: () => import('./features/calendario/calendario.component').then(m => m.CalendarioComponent)
   },
 
   // Detalhes de uma etapa (horários, pista, recordista, distância) — público
   {
     path: 'etapa/:id',
+    title: 'Detalhes da Etapa — F1Fast',
     loadComponent: () => import('./features/etapa-detalhe/etapa-detalhe.component').then(m => m.EtapaDetalheComponent)
   },
 
   // Fazer palpite — PROTEGIDO: requer login (authGuard)
   {
     path: 'palpite',
+    title: 'Fazer Palpite — F1Fast',
     canActivate: [authGuard],
     loadComponent: () => import('./features/palpite/palpite.component').then(m => m.PalpiteComponent)
   },
@@ -58,6 +63,7 @@ export const routes: Routes = [
   // a URL "/palpites" poderia ser tratada como parâmetro vazio.
   {
     path: 'palpites',
+    title: 'Palpites — F1Fast',
     loadComponent: () => import('./features/palpites/palpites.component').then(m => m.PalpitesComponent)
   },
 
@@ -65,42 +71,49 @@ export const routes: Routes = [
   // ":etapaId" é um parâmetro dinâmico na URL (ex: /palpites/5)
   {
     path: 'palpites/:etapaId',
+    title: 'Palpites da Corrida — F1Fast',
     loadComponent: () => import('./features/palpites-corrida/palpites-corrida.component').then(m => m.PalpitesCorridaComponent)
   },
 
   // Regulamento do campeonato — público
   {
     path: 'regulamento',
+    title: 'Regulamento — F1Fast',
     loadComponent: () => import('./features/regulamento/regulamento.component').then(m => m.RegulamentoComponent)
   },
 
   // Página de login — pública
   {
     path: 'entrar',
+    title: 'Entrar no Grid — F1Fast',
     loadComponent: () => import('./features/auth/login.component').then(m => m.LoginComponent)
   },
 
   // Página de cadastro — pública
   {
     path: 'cadastro',
+    title: 'Junte-se à Corrida — F1Fast',
     loadComponent: () => import('./features/auth/cadastro.component').then(m => m.CadastroComponent)
   },
 
   // Solicitar recuperação de senha — pública
   {
     path: 'esqueci-senha',
+    title: 'Pit Stop de Senha — F1Fast',
     loadComponent: () => import('./features/auth/esqueci-senha.component').then(m => m.EsqueciSenhaComponent)
   },
 
   // Redefinir senha (vem do link do e-mail) — pública
   {
     path: 'redefinir-senha',
+    title: 'Nova Senha — F1Fast',
     loadComponent: () => import('./features/auth/redefinir-senha.component').then(m => m.RedefinirSenhaComponent)
   },
 
   // Painel admin — PROTEGIDO: requer login + ser Admin (adminGuard)
   {
     path: 'admin',
+    title: 'Controle de Missão — F1Fast Admin',
     canActivate: [adminGuard],
     loadComponent: () => import('./features/admin/admin.component').then(m => m.AdminComponent),
     // Rotas filhas: renderizadas DENTRO do AdminComponent (onde tem <router-outlet>)
@@ -109,14 +122,17 @@ export const routes: Routes = [
       { path: '', redirectTo: 'resultado', pathMatch: 'full' },
       {
         path: 'resultado',      // /admin/resultado → lançar resultados
+        title: 'Lançar Resultado — F1Fast Admin',
         loadComponent: () => import('./features/admin/resultado/resultado.component').then(m => m.ResultadoComponent)
       },
       {
         path: 'participantes',  // /admin/participantes → gerenciar usuários
+        title: 'Pilotos do Grid — F1Fast Admin',
         loadComponent: () => import('./features/admin/participantes/participantes.component').then(m => m.ParticipantesComponent)
       },
       {
-        path: 'etapas',         // /admin/etapas → gerenciar prazos de apostas
+        path: 'etapas',         // /admin/etapas → gerenciar prazos de palpites
+        title: 'Gerenciar Etapas — F1Fast Admin',
         loadComponent: () => import('./features/admin/etapas/etapas.component').then(m => m.EtapasAdminComponent)
       }
     ]

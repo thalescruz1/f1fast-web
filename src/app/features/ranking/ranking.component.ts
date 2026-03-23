@@ -96,7 +96,7 @@ import { RankingItem, HistoricoEtapa } from '../../core/models';
         </table>
 
         <div class="ver-apostas">
-          <a routerLink="/palpites" class="btn-outline">Ver apostas detalhadas →</a>
+          <a routerLink="/palpites" class="btn-outline">Ver palpites detalhados →</a>
         </div>
       }
     </div>

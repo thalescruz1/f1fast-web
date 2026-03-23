@@ -18,7 +18,7 @@ import { AuthService } from '../../../core/services/auth.service';
         <a class="nl" routerLink="/"            routerLinkActive="on" [routerLinkActiveOptions]="{exact:true}">Home</a>
         <a class="nl" routerLink="/ranking"     routerLinkActive="on">Ranking</a>
         <a class="nl" routerLink="/palpite"     routerLinkActive="on">Palpite</a>
-        <a class="nl" routerLink="/palpites"    routerLinkActive="on">Apostas</a>
+        <a class="nl" routerLink="/palpites"    routerLinkActive="on">Palpites</a>
         <a class="nl" routerLink="/calendario"  routerLinkActive="on">Calendário</a>
         <a class="nl" routerLink="/regulamento" routerLinkActive="on">Regulamento</a>
         @if (auth.isAdmin()) {
@@ -47,7 +47,7 @@ import { AuthService } from '../../../core/services/auth.service';
         <a class="mob-link" routerLink="/"            routerLinkActive="on" [routerLinkActiveOptions]="{exact:true}" (click)="fecharMenu()">Home</a>
         <a class="mob-link" routerLink="/ranking"     routerLinkActive="on" (click)="fecharMenu()">Ranking</a>
         <a class="mob-link" routerLink="/palpite"     routerLinkActive="on" (click)="fecharMenu()">Palpite</a>
-        <a class="mob-link" routerLink="/palpites"    routerLinkActive="on" (click)="fecharMenu()">Apostas</a>
+        <a class="mob-link" routerLink="/palpites"    routerLinkActive="on" (click)="fecharMenu()">Palpites</a>
         <a class="mob-link" routerLink="/calendario"  routerLinkActive="on" (click)="fecharMenu()">Calendário</a>
         <a class="mob-link" routerLink="/regulamento" routerLinkActive="on" (click)="fecharMenu()">Regulamento</a>
         @if (auth.isAdmin()) {

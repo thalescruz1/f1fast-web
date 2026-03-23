@@ -62,7 +62,7 @@ import { Etapa } from '../../core/models';
                   <a routerLink="/palpite" class="cc-link palpite">Fazer Palpite</a>
                 }
                 @if (e.encerrada) {
-                  <a [routerLink]="['/palpites', e.id]" class="cc-link">Apostas →</a>
+                  <a [routerLink]="['/palpites', e.id]" class="cc-link">Palpites →</a>
                 }
               </div>
             </div>

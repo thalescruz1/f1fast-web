@@ -13,7 +13,7 @@ import { Etapa } from '../../core/models';
       <div class="page-header">
         <div>
           <div class="ph-eyebrow">Transparência</div>
-          <h1 class="ph-title">APOSTAS</h1>
+          <h1 class="ph-title">PALPITES</h1>
           <div class="ph-sub">Os palpites de cada etapa ficam visíveis após o prazo limite de envio</div>
         </div>
         <div class="ph-right">
