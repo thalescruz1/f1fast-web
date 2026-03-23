@@ -147,6 +147,15 @@ export class ApiService {
   }
 
   // ──────────────────────────────────────────────────────────
+  // LOGS DE AUDITORIA
+  // ──────────────────────────────────────────────────────────
+
+  /** GET /api/admin/logs → consulta os logs de auditoria */
+  getLogs(params: { acao?: string; login?: string; limite?: number }) {
+    return this.http.get<any[]>(`${this.base}/admin/logs`, { params: params as any });
+  }
+
+  // ──────────────────────────────────────────────────────────
   // RECUPERAÇÃO DE SENHA
   // ──────────────────────────────────────────────────────────
 
