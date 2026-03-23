@@ -411,7 +411,7 @@ export class PalpiteComponent implements OnInit {
     'Max Verstappen', 'Isack Hadjar',
     'Lewis Hamilton', 'Charles Leclerc',
     'George Russell', 'Kimi Antonelli',
-    'Alex Albon', 'Carlos Sainz',
+    'Alexander Albon', 'Carlos Sainz',
     'Nico Hülkenberg', 'Gabriel Bortoleto',
     'Liam Lawson', 'Arvid Lindblad',
     'Esteban Ocon', 'Oliver Bearman',
