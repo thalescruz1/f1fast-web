@@ -10,9 +10,21 @@ import { ToastComponent } from './shared/components/toast/toast.component';
   imports: [RouterOutlet, NavbarComponent, FooterComponent, ToastComponent],
   template: `
     <app-navbar />
-    <router-outlet />
+    <main class="app-main">
+      <router-outlet />
+    </main>
     <app-footer />
     <app-toast />
-  `
+  `,
+  styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .app-main {
+      flex: 1;
+    }
+  `]
 })
 export class AppComponent {}
