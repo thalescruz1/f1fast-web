@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -347,6 +347,7 @@ interface PalpiteConfirmado {
 })
 export class PalpiteComponent implements OnInit {
   private api = inject(ApiService);
+  private cdr = inject(ChangeDetectorRef);
 
   pilotos          = signal<Piloto[]>([]);
   proximaEtapa     = signal<Etapa | null>(null);
@@ -392,18 +393,21 @@ export class PalpiteComponent implements OnInit {
     this.api.getMeuPalpite(etapaId).subscribe({
       next: (p: any) => {
         if (!p) return;
-        this.form['poleId']       = p.poleId       ?? 0;
-        this.form['pos1Id']       = p.pos1Id       ?? 0;
-        this.form['pos2Id']       = p.pos2Id       ?? 0;
-        this.form['pos3Id']       = p.pos3Id       ?? 0;
-        this.form['pos4Id']       = p.pos4Id       ?? 0;
-        this.form['pos5Id']       = p.pos5Id       ?? 0;
-        this.form['pos6Id']       = p.pos6Id       ?? 0;
-        this.form['pos7Id']       = p.pos7Id       ?? 0;
-        this.form['pos8Id']       = p.pos8Id       ?? 0;
-        this.form['pos9Id']       = p.pos9Id       ?? 0;
-        this.form['pos10Id']      = p.pos10Id      ?? 0;
-        this.form['melhorVoltaId'] = p.melhorVoltaId ?? 0;
+        this.form = {
+          poleId:       p.poleId       ?? 0,
+          pos1Id:       p.pos1Id       ?? 0,
+          pos2Id:       p.pos2Id       ?? 0,
+          pos3Id:       p.pos3Id       ?? 0,
+          pos4Id:       p.pos4Id       ?? 0,
+          pos5Id:       p.pos5Id       ?? 0,
+          pos6Id:       p.pos6Id       ?? 0,
+          pos7Id:       p.pos7Id       ?? 0,
+          pos8Id:       p.pos8Id       ?? 0,
+          pos9Id:       p.pos9Id       ?? 0,
+          pos10Id:      p.pos10Id      ?? 0,
+          melhorVoltaId: p.melhorVoltaId ?? 0
+        };
+        this.cdr.detectChanges();
       },
       error: () => { /* sem palpite anterior — form fica vazio */ }
     });
