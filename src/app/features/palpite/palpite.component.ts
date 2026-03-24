@@ -378,14 +378,17 @@ export class PalpiteComponent implements OnInit {
   ];
 
   ngOnInit() {
-    this.api.getPilotos().subscribe(p => this.pilotos.set(p));
-    this.api.getProximaEtapa().subscribe({
-      next:  e => {
-        this.proximaEtapa.set(e);
-        this.loading.set(false);
-        this.carregarPalpiteExistente(e.id);
-      },
-      error: () => this.loading.set(false)
+    // Carrega pilotos primeiro, depois etapa + palpite existente
+    this.api.getPilotos().subscribe(p => {
+      this.pilotos.set(p);
+      this.api.getProximaEtapa().subscribe({
+        next:  e => {
+          this.proximaEtapa.set(e);
+          this.loading.set(false);
+          this.carregarPalpiteExistente(e.id);
+        },
+        error: () => this.loading.set(false)
+      });
     });
   }
 
