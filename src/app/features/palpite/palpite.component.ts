@@ -379,8 +379,33 @@ export class PalpiteComponent implements OnInit {
   ngOnInit() {
     this.api.getPilotos().subscribe(p => this.pilotos.set(p));
     this.api.getProximaEtapa().subscribe({
-      next:  e => { this.proximaEtapa.set(e); this.loading.set(false); },
+      next:  e => {
+        this.proximaEtapa.set(e);
+        this.loading.set(false);
+        this.carregarPalpiteExistente(e.id);
+      },
       error: () => this.loading.set(false)
+    });
+  }
+
+  private carregarPalpiteExistente(etapaId: number) {
+    this.api.getMeuPalpite(etapaId).subscribe({
+      next: (p: any) => {
+        if (!p) return;
+        this.form['poleId']       = p.poleId       ?? 0;
+        this.form['pos1Id']       = p.pos1Id       ?? 0;
+        this.form['pos2Id']       = p.pos2Id       ?? 0;
+        this.form['pos3Id']       = p.pos3Id       ?? 0;
+        this.form['pos4Id']       = p.pos4Id       ?? 0;
+        this.form['pos5Id']       = p.pos5Id       ?? 0;
+        this.form['pos6Id']       = p.pos6Id       ?? 0;
+        this.form['pos7Id']       = p.pos7Id       ?? 0;
+        this.form['pos8Id']       = p.pos8Id       ?? 0;
+        this.form['pos9Id']       = p.pos9Id       ?? 0;
+        this.form['pos10Id']      = p.pos10Id      ?? 0;
+        this.form['melhorVoltaId'] = p.melhorVoltaId ?? 0;
+      },
+      error: () => { /* sem palpite anterior — form fica vazio */ }
     });
   }
 
