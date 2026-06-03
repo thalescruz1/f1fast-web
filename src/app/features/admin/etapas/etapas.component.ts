@@ -63,6 +63,11 @@ import { ApiService } from '../../../core/services/api.service';
                           (click)="toggleCancelada(e)" [disabled]="cancelando[e.id]">
                     {{ e.cancelada ? 'Reativar' : 'Cancelar' }}
                   </button>
+                  <button class="btn-mail" (click)="reenviarLembrete(e)"
+                          [disabled]="reenviando[e.id] || e.encerrada || e.cancelada"
+                          title="Reenviar e-mail de lembrete para todos os participantes">
+                    {{ reenviando[e.id] ? '...' : '✉ Reenviar' }}
+                  </button>
                 </td>
               </tr>
               @if (mensagens[e.id]) {
@@ -138,6 +143,14 @@ import { ApiService } from '../../../core/services/api.service';
     .btn-cancel.reativar:hover { background: rgba(0,230,118,.08); }
     .btn-cancel:disabled { opacity: .5; cursor: not-allowed; }
 
+    .btn-mail {
+      padding: 7px 10px; background: transparent; border: 1.5px solid var(--blue, #0057E1);
+      color: var(--blue, #0057E1); font-size: 11px; font-weight: 600; cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-mail:hover:not(:disabled) { background: rgba(0,87,225,.10); }
+    .btn-mail:disabled { opacity: .4; cursor: not-allowed; }
+
     .msg-row td { padding: 0 10px 8px; }
 
     .loading { text-align: center; padding: 40px; color: var(--w45); }
@@ -152,6 +165,7 @@ export class EtapasAdminComponent implements OnInit {
   form:       Record<number, string>  = {};
   salvando:   Record<number, boolean> = {};
   cancelando: Record<number, boolean> = {};
+  reenviando: Record<number, boolean> = {};
   mensagens:  Record<number, string>  = {};
   erros:      Record<number, boolean> = {};
 
@@ -163,6 +177,7 @@ export class EtapasAdminComponent implements OnInit {
           this.form[e.id]      = e.prazoQualify ? e.prazoQualify.slice(0, 16) : '';
           this.salvando[e.id]  = false;
           this.cancelando[e.id] = false;
+          this.reenviando[e.id] = false;
           this.mensagens[e.id] = '';
           this.erros[e.id]     = false;
         });
@@ -221,6 +236,26 @@ export class EtapasAdminComponent implements OnInit {
         this.cancelando[etapa.id] = false;
         this.erros[etapa.id]      = true;
         this.mensagens[etapa.id]  = err.error?.mensagem || 'Erro ao alterar status.';
+      }
+    });
+  }
+
+  reenviarLembrete(etapa: any) {
+    if (!confirm(`Reenviar o e-mail de lembrete de "${etapa.nome}" para TODOS os participantes?`)) return;
+
+    this.reenviando[etapa.id] = true;
+    this.mensagens[etapa.id]  = '';
+
+    this.api.reenviarLembrete(etapa.id).subscribe({
+      next: (res) => {
+        this.reenviando[etapa.id] = false;
+        this.erros[etapa.id]      = false;
+        this.mensagens[etapa.id]  = res.mensagem;
+      },
+      error: (err) => {
+        this.reenviando[etapa.id] = false;
+        this.erros[etapa.id]      = true;
+        this.mensagens[etapa.id]  = err.error?.mensagem || 'Erro ao reenviar lembrete.';
       }
     });
   }

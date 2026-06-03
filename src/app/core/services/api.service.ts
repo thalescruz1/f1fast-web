@@ -135,6 +135,15 @@ export class ApiService {
   }
 
   /**
+   * POST /api/admin/etapas/{id}/reenviar-lembrete → reenvia o e-mail de lembrete
+   * da etapa para TODOS os participantes na hora (ignora as travas do envio automático).
+   */
+  reenviarLembrete(id: number) {
+    return this.http.post<{ mensagem: string; enviados: number }>(
+      `${this.base}/admin/etapas/${id}/reenviar-lembrete`, {});
+  }
+
+  /**
    * PATCH /api/admin/resultado/usuarios/{id}/role → altera o papel de um usuário
    * JSON.stringify(role) = serializa a string para enviar como body JSON
    */
