@@ -15,6 +15,7 @@ import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
+import { loadingInterceptor } from './core/interceptors/loading.interceptor';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 
@@ -25,8 +26,9 @@ export const appConfig: ApplicationConfig = {
 
     // Registra o HttpClient (necessário para fazer chamadas HTTP)
     // withInterceptors: interceptors executam na ORDEM do array:
-    //   1. authInterceptor → adiciona o token JWT no header
-    //   2. errorInterceptor → captura erros e exibe toasts
-    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor]))
+    //   1. loadingInterceptor → liga/desliga o overlay de carregamento global
+    //   2. authInterceptor → adiciona o token JWT no header
+    //   3. errorInterceptor → captura erros e exibe toasts
+    provideHttpClient(withInterceptors([loadingInterceptor, authInterceptor, errorInterceptor]))
   ]
 };

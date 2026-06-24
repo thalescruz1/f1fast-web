@@ -3,11 +3,12 @@ import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
 import { ToastComponent } from './shared/components/toast/toast.component';
+import { LoadingComponent } from './shared/components/loading/loading.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, FooterComponent, ToastComponent],
+  imports: [RouterOutlet, NavbarComponent, FooterComponent, ToastComponent, LoadingComponent],
   template: `
     <app-navbar />
     <main class="app-main">
@@ -15,6 +16,7 @@ import { ToastComponent } from './shared/components/toast/toast.component';
     </main>
     <app-footer />
     <app-toast />
+    <app-loading />
   `,
   styles: [`
     :host {

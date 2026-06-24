@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "f1fast-web",
+      "runtimeExecutable": "/Users/thalescruz/.nvm/versions/node/v22.22.1/bin/npm",
+      "runtimeArgs": ["start"],
+      "port": 4200
+    },
+    {
+      "name": "f1fast-web-static",
+      "runtimeExecutable": "/Users/thalescruz/.nvm/versions/node/v22.22.1/bin/npx",
+      "runtimeArgs": ["-y", "http-server", "dist/f1fast-web/browser", "-p", "4173", "-c-1"],
+      "port": 4173
+    }
+  ]
+}
