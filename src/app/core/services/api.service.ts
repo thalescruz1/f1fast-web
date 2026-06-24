@@ -107,6 +107,16 @@ export class ApiService {
     return this.http.post(`${this.base}/admin/resultado`, req, { responseType: 'text' });
   }
 
+  /** GET /api/admin/resultado/{etapaId} → resultado já lançado, com IDs (p/ retificação) */
+  getResultadoAdmin(etapaId: number) {
+    return this.http.get<ResultadoRequest>(`${this.base}/admin/resultado/${etapaId}`);
+  }
+
+  /** PUT /api/admin/resultado/{etapaId} → retifica resultado e recalcula pontos */
+  retificarResultado(etapaId: number, req: ResultadoRequest) {
+    return this.http.put(`${this.base}/admin/resultado/${etapaId}`, req, { responseType: 'text' });
+  }
+
   /** GET /api/admin/resultado/usuarios → lista todos os participantes */
   getUsuarios() {
     return this.http.get<any[]>(`${this.base}/admin/resultado/usuarios`);

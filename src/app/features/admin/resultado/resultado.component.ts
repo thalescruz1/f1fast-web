@@ -10,11 +10,11 @@ import { Piloto, Etapa, ResultadoRequest } from '../../../core/models';
   imports: [CommonModule, FormsModule],
   template: `
     <div class="header">
-      <h3>Inserir Resultado</h3>
-      <select class="adm-select" style="width:220px" [(ngModel)]="etapaSelecionadaId">
+      <h3>{{ modoRetificacao() ? 'Retificar Resultado' : 'Inserir Resultado' }}</h3>
+      <select class="adm-select" style="width:220px" [(ngModel)]="etapaSelecionadaId" (ngModelChange)="onEtapaChange()">
         <option [ngValue]="0">Selecione a etapa</option>
         @for (e of etapas(); track e.id) {
-          <option [ngValue]="e.id" [disabled]="e.encerrada">
+          <option [ngValue]="e.id">
             <span class="fi fi-{{e.pais}}"></span> {{ e.nome }} {{ e.encerrada ? '(enc.)' : '' }}
           </option>
         }
@@ -22,6 +22,12 @@ import { Piloto, Etapa, ResultadoRequest } from '../../../core/models';
     </div>
 
     <div class="form">
+      @if (modoRetificacao()) {
+        <div class="aviso-retif">
+          Etapa encerrada — modo retificação. Ao salvar, os pontos de
+          <strong>todos os participantes</strong> desta etapa serão recalculados.
+        </div>
+      }
       <div class="form-row">
         <label class="form-label pole">Pole</label>
         <select class="adm-select" [(ngModel)]="form['poleId']">
@@ -61,7 +67,7 @@ import { Piloto, Etapa, ResultadoRequest } from '../../../core/models';
       <div class="form-footer">
         <button class="btn-ghost" (click)="resetForm()">Limpar</button>
         <button class="btn-red" (click)="salvar()" [disabled]="salvando()">
-          {{ salvando() ? 'Salvando...' : 'Salvar e Calcular Pontos' }}
+          {{ salvando() ? 'Salvando...' : (modoRetificacao() ? 'Retificar e Recalcular Pontos' : 'Salvar e Calcular Pontos') }}
         </button>
       </div>
     </div>
@@ -76,6 +82,10 @@ import { Piloto, Etapa, ResultadoRequest } from '../../../core/models';
       text-transform: uppercase; letter-spacing: 2px; color: var(--red);
     }
     .form { padding: 20px 0; display: flex; flex-direction: column; gap: 10px; }
+    .aviso-retif {
+      padding: 10px 14px; border: 1.5px solid var(--gold);
+      color: var(--gold); font-size: var(--sz-sm); line-height: 1.5;
+    }
     .form-row { display: grid; grid-template-columns: 100px 1fr; gap: 12px; align-items: center; }
     .form-label {
       font-size: var(--sz-sm); font-weight: 700; color: var(--w45);
@@ -116,6 +126,9 @@ export class ResultadoComponent implements OnInit {
   mensagem = signal('');
   msgErro  = signal(false);
 
+  // Etapa encerrada selecionada → retifica resultado existente em vez de inserir
+  modoRetificacao = signal(false);
+
   etapaSelecionadaId = 0;
 
   form: Record<string, number> = {
@@ -143,9 +156,30 @@ export class ResultadoComponent implements OnInit {
     this.mensagem.set('');
   }
 
+  onEtapaChange() {
+    this.resetForm();
+    const etapa = this.etapas().find(e => e.id === this.etapaSelecionadaId);
+    this.modoRetificacao.set(!!etapa?.encerrada);
+
+    if (!etapa?.encerrada) return;
+
+    // Pré-preenche o form com o resultado já lançado para facilitar a correção
+    this.api.getResultadoAdmin(this.etapaSelecionadaId).subscribe({
+      next:  (r) => {
+        Object.keys(this.form).forEach(k => this.form[k] = (r as any)[k] ?? 0);
+      },
+      error: () => this.setMsg('Não foi possível carregar o resultado atual desta etapa.', true)
+    });
+  }
+
   salvar() {
     if (this.etapaSelecionadaId === 0) { this.setMsg('Selecione uma etapa.', true); return; }
     if (Object.values(this.form).some(v => v === 0)) { this.setMsg('Preencha todas as posições.', true); return; }
+
+    if (this.modoRetificacao() &&
+        !confirm('Retificar o resultado e recalcular os pontos de TODOS os participantes desta etapa?')) {
+      return;
+    }
 
     this.salvando.set(true);
 
@@ -161,8 +195,17 @@ export class ResultadoComponent implements OnInit {
       melhorVoltaId: this.form['melhorVoltaId']
     };
 
-    this.api.inserirResultado(req).subscribe({
-      next:  () => { this.setMsg('Resultado salvo e pontos calculados!', false); this.salvando.set(false); },
+    const chamada = this.modoRetificacao()
+      ? this.api.retificarResultado(this.etapaSelecionadaId, req)
+      : this.api.inserirResultado(req);
+
+    chamada.subscribe({
+      next:  () => {
+        this.setMsg(this.modoRetificacao()
+          ? 'Resultado retificado e pontos recalculados!'
+          : 'Resultado salvo e pontos calculados!', false);
+        this.salvando.set(false);
+      },
       error: (e: any)  => { this.setMsg(e.error?.mensagem || 'Erro ao salvar.', true); this.salvando.set(false); }
     });
   }
