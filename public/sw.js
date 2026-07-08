@@ -14,7 +14,7 @@
 // Para forçar atualização em todos os clientes: incremente CACHE.
 // ============================================================
 
-const CACHE = 'f1fast-v1';
+const CACHE = 'f1fast-v2';
 
 const APP_SHELL = [
   '/',
@@ -83,6 +83,51 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() => cached);
       return cached || network;
+    })
+  );
+});
+
+// ============================================================
+// PUSH: recebe a notificação enviada pelo servidor (Web Push)
+// ============================================================
+// O payload é o JSON montado no PushNotificationService:
+//   { title, body, url, tag }
+self.addEventListener('push', (event) => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch (e) { data = {}; }
+
+  const title = data.title || 'F1Fast';
+  const options = {
+    body: data.body || '',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    tag: data.tag || 'f1fast',
+    renotify: true,
+    data: { url: data.url || '/' }
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// ============================================================
+// NOTIFICATION CLICK: foca a aba aberta ou abre a URL do payload
+// ============================================================
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const alvo = (event.notification.data && event.notification.data.url) || '/';
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Se já houver uma aba do app aberta, foca nela e navega
+      for (const client of clientList) {
+        if ('focus' in client) {
+          client.navigate(alvo).catch(() => {});
+          return client.focus();
+        }
+      }
+      // Senão, abre uma nova
+      if (self.clients.openWindow) return self.clients.openWindow(alvo);
     })
   );
 });

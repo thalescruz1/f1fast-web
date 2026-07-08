@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { PushService } from '../../../core/services/push.service';
 
 @Component({
   selector: 'app-navbar',
@@ -28,8 +29,17 @@ import { AuthService } from '../../../core/services/auth.service';
 
       <div class="nav-ctas">
         @if (auth.isLoggedIn()) {
+          @if (push.suportado) {
+            <button class="btn-bell" [class.on]="push.inscrito()" (click)="alternarPush()"
+                    [title]="push.inscrito() ? 'Notificações ativadas — clique para desativar' : 'Ativar notificações'"
+                    aria-label="Notificações">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S10.5 3.17 10.5 4v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+              </svg>
+            </button>
+          }
           <span class="user-name">{{ auth.currentUser()?.login }}</span>
-          <button class="btn-ghost-nav" (click)="auth.logout(); fecharMenu()">Sair</button>
+          <button class="btn-ghost-nav" (click)="sair()">Sair</button>
         } @else {
           <a routerLink="/entrar"   class="btn-ghost-nav">Entrar</a>
           <a routerLink="/cadastro" class="btn-red-nav">Cadastrar</a>
@@ -56,7 +66,12 @@ import { AuthService } from '../../../core/services/auth.service';
         <div class="mob-auth">
           @if (auth.isLoggedIn()) {
             <span class="mob-user">{{ auth.currentUser()?.login }}</span>
-            <button class="btn-red-nav mob-btn" (click)="auth.logout(); fecharMenu()">Sair</button>
+            @if (push.suportado) {
+              <button class="btn-ghost-nav mob-btn" (click)="alternarPush()">
+                {{ push.inscrito() ? '🔔 Notificações ativadas' : '🔕 Ativar notificações' }}
+              </button>
+            }
+            <button class="btn-red-nav mob-btn" (click)="sair()">Sair</button>
           } @else {
             <a routerLink="/entrar"   class="btn-ghost-nav mob-btn" (click)="fecharMenu()">Entrar</a>
             <a routerLink="/cadastro" class="btn-red-nav mob-btn"   (click)="fecharMenu()">Cadastrar</a>
@@ -122,6 +137,15 @@ import { AuthService } from '../../../core/services/auth.service';
     }
     .btn-red-nav:hover { transform: translateY(-1px); }
 
+    .btn-bell {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 4px;
+      background: transparent; border: 1.5px solid var(--b2);
+      color: var(--w45); cursor: pointer; transition: all .15s;
+    }
+    .btn-bell:hover { border-color: var(--w45); color: var(--white); }
+    .btn-bell.on { color: var(--red); border-color: var(--red); }
+
     .hamburger { display: none; }
 
     @media (max-width: 768px) {
@@ -162,7 +186,19 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class NavbarComponent {
   auth = inject(AuthService);
+  push = inject(PushService);
   menuAberto = signal(false);
+
+  constructor() {
+    // Reflete o estado da inscrição no sino ao carregar
+    if (this.auth.isLoggedIn()) this.push.sincronizar();
+  }
+
   toggleMenu() { this.menuAberto.update(v => !v); }
   fecharMenu() { this.menuAberto.set(false); }
+
+  alternarPush() { this.push.alternar(); this.fecharMenu(); }
+
+  // Sair também cancela a inscrição de push deste dispositivo
+  sair() { this.push.desativar(); this.auth.logout(); this.fecharMenu(); }
 }

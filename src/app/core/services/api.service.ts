@@ -117,6 +117,16 @@ export class ApiService {
     return this.http.put(`${this.base}/admin/resultado/${etapaId}`, req, { responseType: 'text' });
   }
 
+  /** POST /api/push/subscribe → registra a inscrição de push deste dispositivo */
+  subscribePush(sub: { endpoint: string; p256dh: string; auth: string }) {
+    return this.http.post(`${this.base}/push/subscribe`, sub, { responseType: 'text' });
+  }
+
+  /** POST /api/push/unsubscribe → remove a inscrição deste dispositivo */
+  unsubscribePush(endpoint: string) {
+    return this.http.post(`${this.base}/push/unsubscribe`, { endpoint }, { responseType: 'text' });
+  }
+
   /** GET /api/admin/resultado/usuarios → lista todos os participantes */
   getUsuarios() {
     return this.http.get<any[]>(`${this.base}/admin/resultado/usuarios`);
