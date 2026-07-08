@@ -14,7 +14,7 @@
 // Para forçar atualização em todos os clientes: incremente CACHE.
 // ============================================================
 
-const CACHE = 'f1fast-v2';
+const CACHE = 'f1fast-v3';
 
 const APP_SHELL = [
   '/',
