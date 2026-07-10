@@ -59,8 +59,8 @@ import { Etapa } from '../../core/models';
             <h1 class="dh-name">{{ etapa()!.nome }}</h1>
             <div class="dh-circuit">{{ etapa()!.circuito }} · {{ etapa()!.cidade }}</div>
           </div>
-          @if (etapa()!.sprint) {
-            <div class="sprint-badge">Sprint</div>
+          @if (ehSprintWeekend()) {
+            <div class="sprint-badge">Fim de semana Sprint</div>
           }
         </div>
 
@@ -68,38 +68,18 @@ import { Etapa } from '../../core/models';
           <!-- Schedule -->
           <div class="det-card">
             <div class="dc-title">Programação</div>
-            @if (etapa()!.treinoLivre1) {
-              <div class="sch-row">
-                <span class="sch-label">Treino Livre 1</span>
-                <span class="sch-time">{{ etapa()!.treinoLivre1 | date:'dd/MM · HH:mm' }}</span>
+            @for (s of programacao(); track s.label) {
+              <div class="sch-row" [class.highlight]="s.highlight">
+                <span class="sch-label">{{ s.label }}</span>
+                <span class="sch-time">{{ s.time | date:'dd/MM · HH:mm' }}</span>
               </div>
             }
-            @if (etapa()!.treinoLivre2) {
-              <div class="sch-row">
-                <span class="sch-label">Treino Livre 2</span>
-                <span class="sch-time">{{ etapa()!.treinoLivre2 | date:'dd/MM · HH:mm' }}</span>
+            @for (p of prazos(); track p.label) {
+              <div class="sch-row deadline">
+                <span class="sch-label">{{ p.label }}</span>
+                <span class="sch-time">{{ p.time | date:'dd/MM · HH:mm' }}</span>
               </div>
             }
-            @if (etapa()!.treinoLivre3) {
-              <div class="sch-row">
-                <span class="sch-label">Treino Livre 3</span>
-                <span class="sch-time">{{ etapa()!.treinoLivre3 | date:'dd/MM · HH:mm' }}</span>
-              </div>
-            }
-            @if (etapa()!.classificacao) {
-              <div class="sch-row">
-                <span class="sch-label">Classificação</span>
-                <span class="sch-time">{{ etapa()!.classificacao | date:'dd/MM · HH:mm' }}</span>
-              </div>
-            }
-            <div class="sch-row highlight">
-              <span class="sch-label">{{ etapa()!.sprint ? 'Sprint' : 'Corrida' }}</span>
-              <span class="sch-time">{{ etapa()!.dataCorrida | date:'dd/MM · HH:mm' }}</span>
-            </div>
-            <div class="sch-row deadline">
-              <span class="sch-label">Prazo Palpites</span>
-              <span class="sch-time">{{ etapa()!.prazoQualify | date:'dd/MM · HH:mm' }}</span>
-            </div>
           </div>
 
           <!-- Circuit -->
@@ -305,6 +285,60 @@ export class EtapaDetalheComponent implements OnInit {
     if (!cur || !all.length) return null;
     const idx = all.findIndex(e => e.id === cur.id);
     return idx >= 0 && idx < all.length - 1 ? all[idx + 1] : null;
+  });
+
+  // Detecta fim de semana Sprint: Sprint e GP são duas Etapas (mesma pista,
+  // número consecutivo). Retorna { gp, sprint } para consolidar a programação.
+  sprintWeekend = computed<{ gp: Etapa; sprint: Etapa } | null>(() => {
+    const cur = this.etapa();
+    const all = this.allEtapas();
+    if (!cur || !all.length) return null;
+    const mesmoFds = (e: Etapa, num: number) =>
+      e.circuito === cur.circuito && e.cidade === cur.cidade && e.numero === num;
+    if (!cur.sprint) {
+      const sprint = all.find(e => e.sprint && mesmoFds(e, cur.numero - 1));
+      return sprint ? { gp: cur, sprint } : null;
+    }
+    const gp = all.find(e => !e.sprint && mesmoFds(e, cur.numero + 1));
+    return gp ? { gp, sprint: cur } : null;
+  });
+
+  ehSprintWeekend = computed(() => !!this.sprintWeekend() || !!this.etapa()?.sprint);
+
+  // Programação consolidada (só sessões com horário definido)
+  programacao = computed<{ label: string; time: string | null; highlight: boolean }[]>(() => {
+    const cur = this.etapa();
+    if (!cur) return [];
+    const sw = this.sprintWeekend();
+    const rows = sw
+      ? [
+          { label: 'Treino Livre 1',   time: sw.sprint.treinoLivre1 ?? sw.gp.treinoLivre1, highlight: false },
+          { label: 'Sprint Qualifying', time: sw.sprint.classificacao,                     highlight: false },
+          { label: 'Sprint',            time: sw.sprint.dataCorrida,                        highlight: true  },
+          { label: 'Classificação',     time: sw.gp.classificacao,                          highlight: false },
+          { label: 'Corrida',           time: sw.gp.dataCorrida,                            highlight: true  },
+        ]
+      : [
+          { label: 'Treino Livre 1', time: cur.treinoLivre1, highlight: false },
+          { label: 'Treino Livre 2', time: cur.treinoLivre2, highlight: false },
+          { label: 'Treino Livre 3', time: cur.treinoLivre3, highlight: false },
+          { label: 'Classificação',  time: cur.classificacao, highlight: false },
+          { label: cur.sprint ? 'Sprint' : 'Corrida', time: cur.dataCorrida, highlight: true },
+        ];
+    return rows.filter(r => !!r.time);
+  });
+
+  // Prazos de palpite: 2 (Sprint + Corrida) num fim de semana sprint, 1 caso contrário
+  prazos = computed<{ label: string; time: string }[]>(() => {
+    const cur = this.etapa();
+    if (!cur) return [];
+    const sw = this.sprintWeekend();
+    return sw
+      ? [
+          { label: 'Palpite Sprint',  time: sw.sprint.prazoQualify },
+          { label: 'Palpite Corrida', time: sw.gp.prazoQualify },
+        ]
+      : [{ label: 'Prazo Palpites', time: cur.prazoQualify }];
   });
 
   private cachedEtapas: Etapa[] = [];
