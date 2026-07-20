@@ -81,7 +81,7 @@ import { PalpitePublico, ResultadoPublico, Etapa } from '../../core/models';
             </thead>
             <tbody>
               @for (p of palpites(); track p.login) {
-                <tr>
+                <tr [attr.data-login]="p.login" [class.row-destaque]="p.login === destaque()">
                   <td class="col-fixed login-cell">{{ p.login }}</td>
                   <td class="enviado">{{ p.enviadoEm | date:'dd/MM HH:mm' }}</td>
                   @for (pos of p.posicoes; track $index) {
@@ -151,6 +151,10 @@ import { PalpitePublico, ResultadoPublico, Etapa } from '../../core/models';
     }
     .palpites-table tbody tr { transition: background .1s; }
     .palpites-table tbody tr:hover { background: var(--s1); }
+    .palpites-table tbody tr.row-destaque td { background: rgba(232,0,26,.10); }
+    .palpites-table tbody tr.row-destaque .col-fixed {
+      background: #2a0b10; box-shadow: 2px 0 4px rgba(0,0,0,.3), inset 3px 0 0 var(--red);
+    }
 
     .col-fixed {
       position: sticky; left: 0; background: var(--bg); z-index: 2;
@@ -190,14 +194,20 @@ export class PalpitesCorridaComponent implements OnInit {
   etapa     = signal<Etapa | null>(null);
   loading   = signal(true);
   erro      = signal('');
+  destaque  = signal('');   // login vindo de ?p= (para destacar/rolar até o participante)
 
   posIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
   ngOnInit() {
     const etapaId = Number(this.route.snapshot.paramMap.get('etapaId'));
+    this.destaque.set(this.route.snapshot.queryParamMap.get('p') || '');
 
     this.api.getPalpitesPublicos(etapaId).subscribe({
-      next:  p => { this.palpites.set(p); this.loading.set(false); },
+      next:  p => {
+        this.palpites.set(p);
+        this.loading.set(false);
+        if (this.destaque()) this.rolarAteDestaque();
+      },
       error: (e: any) => { this.erro.set(e.error?.mensagem || 'Erro ao carregar palpites.'); this.loading.set(false); }
     });
 
@@ -210,6 +220,15 @@ export class PalpitesCorridaComponent implements OnInit {
       next: etapas => this.etapa.set(etapas.find(x => x.id === etapaId) ?? null),
       error: () => {}
     });
+  }
+
+  private rolarAteDestaque() {
+    setTimeout(() => {
+      const el = document.querySelector(
+        `.palpites-table tbody tr[data-login="${CSS.escape(this.destaque())}"]`
+      ) as HTMLElement | null;
+      el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }, 120);
   }
 
   abreviar(piloto: string): string {

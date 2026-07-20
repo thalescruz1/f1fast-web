@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { RankingItem, HistoricoEtapa } from '../../core/models';
 
@@ -46,7 +46,7 @@ import { RankingItem, HistoricoEtapa } from '../../core/models';
                 </div>
                 @if (estaAberto(p.item.usuarioId)) {
                   <div class="rank-hist" (click)="$event.stopPropagation()">
-                    <ng-container [ngTemplateOutlet]="histTpl" [ngTemplateOutletContext]="{ id: p.item.usuarioId }"></ng-container>
+                    <ng-container [ngTemplateOutlet]="histTpl" [ngTemplateOutletContext]="{ id: p.item.usuarioId, login: p.item.login }"></ng-container>
                   </div>
                 }
               </div>
@@ -78,7 +78,7 @@ import { RankingItem, HistoricoEtapa } from '../../core/models';
               </div>
               @if (estaAberto(item.usuarioId)) {
                 <div class="rank-hist">
-                  <ng-container [ngTemplateOutlet]="histTpl" [ngTemplateOutletContext]="{ id: item.usuarioId }"></ng-container>
+                  <ng-container [ngTemplateOutlet]="histTpl" [ngTemplateOutletContext]="{ id: item.usuarioId, login: item.login }"></ng-container>
                 </div>
               }
             </div>
@@ -92,7 +92,7 @@ import { RankingItem, HistoricoEtapa } from '../../core/models';
     </div>
 
     <!-- Faixa horizontal de pontos por GP (reutilizada no pódio e na lista) -->
-    <ng-template #histTpl let-id="id">
+    <ng-template #histTpl let-id="id" let-login="login">
       @if (estaCarregando(id)) {
         <div class="hist-loading">Carregando...</div>
       } @else if (hist(id).length === 0) {
@@ -100,7 +100,9 @@ import { RankingItem, HistoricoEtapa } from '../../core/models';
       } @else {
         <div class="hist-strip">
           @for (h of hist(id); track h.etapaNumero) {
-            <div class="hist-cell" [title]="h.etapaNumero + '. ' + h.etapaNome">
+            <div class="hist-cell" [class.clicavel]="etapaIds()[h.etapaNumero]"
+                 [title]="h.etapaNumero + '. ' + h.etapaNome + ' — ver palpite'"
+                 (click)="abrirPalpite(h.etapaNumero, login, $event)">
               <span class="hc-gp">{{ abreviarGp(h.etapaNome) }}</span>
               <span class="hc-pts" [ngClass]="tierPts(h.pontos)">{{ h.pontos }}</span>
             </div>
@@ -135,7 +137,11 @@ import { RankingItem, HistoricoEtapa } from '../../core/models';
     .pod-badge.g { background: var(--gold); color: #000; }
     .pod-badge.s { background: var(--silver); color: #000; }
     .pod-badge.b { background: var(--bronze); color: #000; }
-    .pod-name { font-family: var(--font-display); font-weight: 700; font-size: var(--sz-xl); text-transform: uppercase; }
+    .pod-name {
+      font-family: var(--font-display); font-weight: 700; font-size: var(--sz-xl);
+      text-transform: uppercase; line-height: 1.1; min-height: 2.2em;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
     .pod-handle { font-size: var(--sz-sm); color: var(--w45); margin: 3px 0 16px; }
     .pod-pts { font-family: var(--font-orb); font-size: 40px; font-weight: 900; line-height: 1; }
     .pod-pts.g { color: var(--gold); }
@@ -185,6 +191,8 @@ import { RankingItem, HistoricoEtapa } from '../../core/models';
       display: flex; flex-direction: column; align-items: center; gap: 4px;
       padding: 8px 6px; background: var(--s2); border: 1px solid var(--b1);
     }
+    .hist-cell.clicavel { cursor: pointer; transition: border-color .12s, background .12s; }
+    .hist-cell.clicavel:hover { border-color: var(--red); background: var(--s3); }
     .hc-gp {
       font-size: 10px; font-weight: 700; letter-spacing: .5px;
       color: var(--w45); text-transform: uppercase; white-space: nowrap;
@@ -225,10 +233,14 @@ import { RankingItem, HistoricoEtapa } from '../../core/models';
 })
 export class RankingComponent implements OnInit {
   private api = inject(ApiService);
+  private router = inject(Router);
 
   ranking     = signal<RankingItem[]>([]);
   ultimoGp    = signal<string | null>(null);
   loading     = signal(true);
+
+  // Mapa número da etapa → id (para linkar a célula ao /palpites/:id)
+  etapaIds = signal<Record<number, number>>({});
 
   // Múltiplos participantes podem ficar abertos ao mesmo tempo (para comparar)
   private abertos     = signal<Set<number>>(new Set());
@@ -255,6 +267,24 @@ export class RankingComponent implements OnInit {
       next: r => this.ultimoGp.set(r.nomeGp),
       error: () => {}
     });
+
+    // Mapeia número → id para poder abrir o palpite da etapa a partir da célula
+    this.api.getEtapas().subscribe({
+      next: etapas => {
+        const m: Record<number, number> = {};
+        etapas.forEach(e => m[e.numero] = e.id);
+        this.etapaIds.set(m);
+      },
+      error: () => {}
+    });
+  }
+
+  /** Abre o detalhe do palpite daquele participante naquela etapa. */
+  abrirPalpite(etapaNumero: number, login: string, ev: Event) {
+    ev.stopPropagation();
+    const id = this.etapaIds()[etapaNumero];
+    if (!id) return;
+    this.router.navigate(['/palpites', id], { queryParams: { p: login } });
   }
 
   estaAberto(id: number)     { return this.abertos().has(id); }
