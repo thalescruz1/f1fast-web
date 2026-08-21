@@ -21,6 +21,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
           <a routerLink="resultado"     routerLinkActive="active" class="menu-item">Inserir Resultado</a>
           <a routerLink="participantes" routerLinkActive="active" class="menu-item">Participantes</a>
           <a routerLink="etapas"        routerLinkActive="active" class="menu-item">Gerenciar Prazos</a>
+          <a routerLink="pilotos"       routerLinkActive="active" class="menu-item">Gerenciar Pilotos</a>
           <a routerLink="logs"          routerLinkActive="active" class="menu-item">Logs de Auditoria</a>
         </div>
         <div class="admin-content">

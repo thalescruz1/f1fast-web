@@ -136,6 +136,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/etapas/etapas.component').then(m => m.EtapasAdminComponent)
       },
       {
+        path: 'pilotos',        // /admin/pilotos → gerenciar pilotos (substituições)
+        title: 'Gerenciar Pilotos — F1Fast Admin',
+        loadComponent: () => import('./features/admin/pilotos/pilotos.component').then(m => m.PilotosAdminComponent)
+      },
+      {
         path: 'logs',           // /admin/logs → logs de auditoria
         title: 'Logs de Auditoria — F1Fast Admin',
         loadComponent: () => import('./features/admin/logs/logs.component').then(m => m.LogsAdminComponent)

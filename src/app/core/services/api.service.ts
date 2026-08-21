@@ -19,7 +19,8 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import {
   Piloto, Etapa, PalpiteRequest, PalpitePublico,
-  RankingItem, ResultadoRequest, ResultadoPublico, HistoricoEtapa
+  RankingItem, ResultadoRequest, ResultadoPublico, HistoricoEtapa,
+  PilotoAdmin, EquipeAdmin
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -130,6 +131,27 @@ export class ApiService {
   /** GET /api/admin/resultado/usuarios → lista todos os participantes */
   getUsuarios() {
     return this.http.get<any[]>(`${this.base}/admin/resultado/usuarios`);
+  }
+
+  // ── Admin: pilotos ──────────────────────────────────────
+  /** GET /api/admin/pilotos → todos os pilotos (inclusive inativos) */
+  getPilotosAdmin() {
+    return this.http.get<PilotoAdmin[]>(`${this.base}/admin/pilotos`);
+  }
+
+  /** GET /api/admin/pilotos/equipes → equipes para o dropdown */
+  getEquipesAdmin() {
+    return this.http.get<EquipeAdmin[]>(`${this.base}/admin/pilotos/equipes`);
+  }
+
+  /** POST /api/admin/pilotos → adiciona um piloto (ex: substituto) */
+  addPiloto(req: { numero: number; nome: string; equipeId: number; ativo: boolean }) {
+    return this.http.post<PilotoAdmin>(`${this.base}/admin/pilotos`, req);
+  }
+
+  /** PATCH /api/admin/pilotos/{id} → atualiza equipe, status, nome, número */
+  updatePiloto(id: number, req: { numero: number; nome: string; equipeId: number; ativo: boolean }) {
+    return this.http.patch<PilotoAdmin>(`${this.base}/admin/pilotos/${id}`, req);
   }
 
   /** GET /api/admin/etapas → lista todas as etapas com prazo e status */

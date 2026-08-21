@@ -135,3 +135,21 @@ export interface ResultadoRequest {
   pos11Id:       number; // 11° lugar real (necessário para ±1 na pontuação do 10°)
   melhorVoltaId: number; // Quem fez a melhor volta real
 }
+
+/** Equipe (para o dropdown do admin de pilotos) */
+export interface EquipeAdmin {
+  id:   number;
+  nome: string;
+  cor:  string;
+}
+
+/** Piloto na visão do admin (inclui equipe e status) */
+export interface PilotoAdmin {
+  id:         number;
+  numero:     number;
+  nome:       string;
+  equipeId:   number;
+  equipeNome: string;
+  equipeCor:  string;
+  ativo:      boolean;
+}
